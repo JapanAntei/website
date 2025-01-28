@@ -15,7 +15,7 @@ export default defineConfig({
   },*/
   root: 'src',
   base: '/',
-  publicDir: 'public',
+  publicDir: '../public',
     build: {
     outDir: '../dist',
     rollupOptions: {
@@ -24,6 +24,11 @@ export default defineConfig({
         sample2: path.resolve(import.meta.dirname, 'src/aaaa/index.html'),
       },
     }
+  },
+  resolve: {                                // ・・・・追加
+    alias: {                                // ・・・・追加
+      '@shared': path.resolve(import.meta.dirname, 'src/shared') // ・・・・追加
+    }                                       // ・・・・追加
   },
   // 絶対パスか、`root` からの相対パスで指定する
   envDir: '../',
