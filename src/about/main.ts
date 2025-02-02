@@ -3,4 +3,4 @@ import '@shared/styles/style.css'
 import App from './App.vue'
 
 createApp(App).mount('#app')
-console.log("b")
+console.log("a")

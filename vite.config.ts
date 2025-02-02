@@ -21,7 +21,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         sample1: path.resolve(import.meta.dirname, 'src/index.html'),
-        sample2: path.resolve(import.meta.dirname, 'src/aaaa/index.html'),
+        about: path.resolve(import.meta.dirname, 'src/about/index.html'),
       },
     }
   },
