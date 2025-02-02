@@ -1,7 +1,5 @@
 <script setup lang="ts">
 
-defineProps()
-
 </script>
 
 <template>
@@ -12,7 +10,7 @@ defineProps()
     <div class="header-site-menu">
       <nav class="site-menu">
         <ul>
-          <li><a href="/about.html">about</a></li>
+          <li><a href="/about/">about</a></li>
         </ul>
       </nav>
     </div>

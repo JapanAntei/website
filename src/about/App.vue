@@ -3,9 +3,9 @@ import Header from '@shared/components/Header.vue'
 </script>
 
 <template>
-  <Header />
+  <Header/>
   <div>
-    <h1>日本を安定陸塊にする会</h1>
+    <h1>日本を安定陸塊にする会について</h1>
   </div>
   
 </template>
