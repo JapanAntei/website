@@ -64,8 +64,5 @@ import NAFooter from '@shared/components/NAFooter.vue';
   font-style: normal;
 }
 
-main{
-  margin-bottom: 30px;
-  margin-bottom: 30px;
-}
+
 </style>

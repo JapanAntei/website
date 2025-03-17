@@ -5,9 +5,9 @@ import NAFooter from '@shared/components/NAFooter.vue';
 
 <template>
   <NAHeader/>
-  <div>
+  <main>
     <h1>日本を安定陸塊にする会について</h1>
-  </div>
+  </main>
   <NAFooter/>
 
 </template>
