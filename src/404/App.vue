@@ -5,21 +5,9 @@ import NAFooter from '@shared/components/NAFooter.vue';
 
 <template>
   <NAHeader />
-  <div id="topContent">
-    <img src="/img/test.png" id="mainPicture">
-    <div id="sloganBox">
-      <div>
-        <h2 id="slogan" class="noto-sans-jp">石の上にも三年<br>技術の手で三分</h2>
-      </div>
-
-      <div></div>
-    </div>
-
-
-  </div>
   <main>
-    <h1>日本を安定陸塊にする会とは？</h1>
-    <p>日本を安定陸塊にする会とは、日本を安定陸塊にしたいと思う滋賀県の生徒たちが集う会です。</p>
+    <h1>指定されたページが見つかりませんでした</h1>
+    <p>URLを確認してください</p>
   </main>
   <NAFooter />
 </template>
