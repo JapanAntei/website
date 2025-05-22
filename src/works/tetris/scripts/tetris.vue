@@ -29,13 +29,104 @@ THE SOFTWARE.
 
 import { gameOver, gamePause, drawNext, genBlock, genStrokedBlock } from './canvasController';
 import { bigBlockBox, blockNumHeight, blockNumWidth, blockSize, DLEffect, fieldColor, fieldHeight, fieldWidth, holdNum, nextNum, smallBlockBox, type shape, type shapeData} from './globalData';
-import { ref, onMounted/*, onBeforeUpdate*/ } from 'vue';
+import { ref, onMounted,/*, onBeforeUpdate*/ 
+watch} from 'vue';
 import { shapes } from './shapes';
 
+const emit = defineEmits(['pauseButton', "resetPause"])
 /*
  * 画面サイズなどの初期設定を行う変数の初期化
  */
 // 初期化
+
+const keyCode = {
+  32: "_",
+  37: "←",
+  38: "↑",
+  39: "→",
+  40: "↓",
+  48: "0",
+  49: "1",
+  50: "2",
+  51: "3",
+  52: "4",
+  53: "5",
+  54: "6",
+  55: "7",
+  56: "8",
+  57: "9",
+  59: ";",
+  65: "A",
+  66: "B",
+  67: "C",
+  68: "D",
+  69: "E",
+  70: "F",
+  71: "G",
+  72: "H",
+  73: "I",
+  74: "J",
+  75: "K",
+  76: "L",
+  77: "M",
+  78: "N",
+  79: "O",
+  80: "P",
+  81: "Q",
+  82: "R",
+  83: "S",
+  84: "T",
+  85: "U",
+  86: "V",
+  87: "W",
+  88: "X",
+  89: "Y",
+  90: "Z",
+  188: ",",
+  189: ".",
+  191: "/",
+  220: "\\"
+}
+
+interface KeyBinds{
+  drop: string;
+  down:string;
+  left:string;
+  right:string;
+  rotateR: string;
+  rotateL: string;
+  hold: string[];
+  pause: string;
+}
+
+interface Props{
+  left: boolean;
+  keyBinds?: KeyBinds;
+  keyboardAlias?: KeyboardAlias;
+  pausing: boolean;
+}
+
+interface KeyboardAlias{
+  [k : string]: string;
+}
+
+const props = withDefaults(defineProps<Props>(),
+  {
+    left:false,
+    keyBinds: (): KeyBinds => ({
+      drop:"_",
+      down:"↓",
+      left:"→",
+      right: "←",
+      rotateR:"\\",
+      rotateL:"/",
+      hold:["v"],
+      pause:"F"
+    }),
+    keyboardAlias: (): KeyboardAlias => ({}),
+    pausing: false
+  }
+)
 
 
 // ゲーム初期値
@@ -53,13 +144,20 @@ let fourLineRmoved = ref(0);
 let spacePressed = false;
 let lKeyPressed = false;
 let rKeyPressed = false;
-let sensitivity = 80;
+let dKeyPressed = false;
+let lTimeout: NodeJS.Timeout;
+let rTimeout: NodeJS.Timeout;
+let dTimeout: NodeJS.Timeout;
+let sensitivity = 240;
+let checkLongPress = 400
+let disableDown = false;
 
 let held: boolean[] = []
 
 // ゲーム状態
 let gameEnd = false;
 let gamePaused = false;
+let gameEffecting = false;
 
 let timeoutID: NodeJS.Timeout;
 
@@ -90,6 +188,12 @@ onMounted(() => {
 })
 
 function resetGame() {
+  gameEnd = false;
+  if(gamePaused){
+
+    emit("resetPause")
+  gamePaused = false
+  }
   clearTimeout(timeoutID)
   nextShape = [activeShapes[Math.floor(Math.random() * activeShapes.length)]]
   holdShapes = new Array(holdNum).fill(-1);
@@ -182,6 +286,10 @@ const controlBlock: {
   Y: -blockSize,
   pos: 0,
   reset: () => {
+    if(dKeyPressed){
+      disableDown = true;
+      dKeyPressed = false;
+    }
     controlBlock.shapeID = nextShape[0]
     controlBlock.shape = shapes[controlBlock.shapeID]
     nextShape = nextShape.slice(1)
@@ -189,6 +297,7 @@ const controlBlock: {
     controlBlock.Y = -blockSize
     controlBlock.color = controlBlock.shape.color
     controlBlock.pos = 0
+    blocksDropped.value += 1;
     randomBlocks()
     held = held.map(_ => false)
     drawNext(nextFields.value, nextShape, (n) => n == 0 ? 1 : 0.5)
@@ -463,7 +572,8 @@ const controlBlock: {
 const removeLinesEffect = function (removeLines: number[]) {
   let tempFields = fields.slice()
   if (DLEffect) {
-    gamePaused = true
+    gamePaused = true;
+    gameEffecting = true;
     window.clearTimeout(timeoutID);
     (async () => {
       for (let i = 0; i < blockNumWidth; i++) {
@@ -507,6 +617,9 @@ const removeLines = function () {
   if (deleteLines.length >= 1) {
     level.value = Math.floor((linesRemoved.value / 10)) + 1;
     speed = 700 - (level.value * 50);
+    if(deleteLines.length >= 4){
+      fourLineRmoved.value += deleteLines.length / 4;
+    }
 
     // 点数評価
     const multiplier = 25 * (deleteLines.length ** 2);
@@ -528,197 +641,241 @@ const drawGameField = function () {
 }
 
 // 押しっぱなし左移動
-const moveLeft = function () {
+const moveLeft = function (isFirst = true) {
   if (lKeyPressed) {
     controlBlock.moveLeft();
-    setTimeout(moveLeft, sensitivity);
+        lTimeout = setTimeout(() => moveLeft(false), isFirst ? checkLongPress : sensitivity);
   }
 }
 
 // 押しっぱなし右移動
-const moveRight = function () {
+const moveRight = function (isFirst = true) {
   if (rKeyPressed) {
     controlBlock.moveRight();
-    setTimeout(moveRight, sensitivity);
+    rTimeout = setTimeout(() => moveRight(false), isFirst ? checkLongPress : sensitivity);
+  }
+}
+const moveDown = function (isFirst = true) {
+  if (dKeyPressed) {
+    controlBlock.moveDown();
+    dTimeout = setTimeout(() => moveDown(false), isFirst ? checkLongPress : sensitivity);
   }
 }
 // キー取得
-var getKeyCode = function(e : KeyboardEvent) {
+var getKeyCode = function(e : KeyboardEvent): number {
   var code;
   if (window.event) {  // IE
     code = e.keyCode;
   } else if(e.which) { // Netscape/Firefox/Opera
     code = e.which;
+  }else {
+    code = -1
   }
   return code;
+}
+
+const getKeyAlias = function(baseKey: string): string{
+  if(props.keyboardAlias[baseKey]) return getKeyAlias(props.keyboardAlias[baseKey])
+  else return baseKey;
+}
+
+const equalKeyCode = function(bindedKey: string, enteredKeyCode:number){
+  return bindedKey === getKeyAlias(keyCode[enteredKeyCode as 32])
 }
 
 /*
  * キーイベント（キー入力）の制御
  */
 // キーアップイベント初期化(押しっ放し対応)
-document.onkeyup = function(e) {
+document.addEventListener("keyup", (e) => {
+
   var keycode = getKeyCode(e);
-  if (keycode == 32) {          // space
+  if (equalKeyCode(props.keyBinds.drop, keycode)) {          // space
     spacePressed = false;
-  } else if (keycode == 37) {   // ←
+  } else if (equalKeyCode(props.keyBinds.left, keycode)) {   // ←
     lKeyPressed = false;
-  } else if (keycode == 39) {   // →
+    clearTimeout(lTimeout)
+  } else if (equalKeyCode(props.keyBinds.right, keycode)) {   // →
     rKeyPressed = false;
+    clearTimeout(rTimeout)
+  } else if (equalKeyCode(props.keyBinds.down, keycode)) {   // →
+    dKeyPressed = false;
+    disableDown = false;
+    clearTimeout(dTimeout)
   }
-}
+})
 // キーダウンイベント初期化
-document.onkeydown = function(e) {
+document.addEventListener("keydown",(e) => {
+
   var keycode = getKeyCode(e);
   if (!gameEnd && !gamePaused) {
-    if (keycode == 38) {        // ↑
+    if (equalKeyCode(props.keyBinds.rotateR, keycode)) {        // ↑
       e.preventDefault();
       controlBlock.rotate();
-    } else if (keycode == 37) { // ←
+    } else if (equalKeyCode(props.keyBinds.left, keycode)) { // ←
       e.preventDefault();
       lKeyPressed = true;
-      controlBlock.moveLeft();
-    } else if (keycode == 39) { // →
+      moveLeft();
+    } else if (equalKeyCode(props.keyBinds.right, keycode)) { // →
       e.preventDefault();
       rKeyPressed = true;
-      controlBlock.moveRight();
-    } else if (keycode == 40) { // ↓
+      moveRight();
+    } else if (equalKeyCode(props.keyBinds.down, keycode)) { // ↓
       e.preventDefault();
-      controlBlock.moveDown();
-    } else if (keycode == 32 && !spacePressed) { // space 押しっぱなしチェック
+      if(!disableDown){
+      dKeyPressed = true;
+      moveDown();
+      }
+    } else if (equalKeyCode(props.keyBinds.drop, keycode) && !spacePressed) { // space 押しっぱなしチェック
       spacePressed = true;
       e.preventDefault();
       controlBlock.dropDown();
     }
-     else if (keycode == 86) { // ↓
+     else if (props.keyBinds.hold.includes( getKeyAlias(keyCode[keycode as 32]))) { // ↓
       e.preventDefault();
-      controlBlock.hold(0);
+      controlBlock.hold(props.keyBinds.hold.indexOf( getKeyAlias(keyCode[keycode as 32])));
 
     }
-     else if (keycode == 191) { // ↓
+     else if (equalKeyCode(props.keyBinds.rotateL, keycode)) { // ↓
       e.preventDefault();
-      controlBlock.rotate2;
+      controlBlock.rotate2();
       
     }
   }
-  
-  if (keycode == 80 && !gameEnd) {
-    if (gamePaused) {
+  if (equalKeyCode(props.keyBinds.pause, keycode) && !gameEnd) {
+    pauseControl();
+  }
+})
+
+const pauseControl = (e?: TouchEvent | MouseEvent) => {
+
+  e?.preventDefault()
+  if(!gameEnd) emit("pauseButton")
+}
+
+
+watch(() => props.pausing, (val)=>{
+  if(!val){
       gamePaused = false;
                   drawGameField();
             timeoutID = setTimeout(loopGame, speed);
-    } else {
-      gamePaused = true;
-      gamePause(tfield.value?.getContext("2d")!);
-    }
+  }else if(!gameEffecting){
+        gamePaused = true;
+    gamePause(tfield.value?.getContext("2d")!);
   }
-}
+})
 
-const confirmResetGame = () => {
+const confirmResetGame = (e: TouchEvent | MouseEvent) => {
+  e.preventDefault()
   if(confirm("本当にリセットしますか？")){
     resetGame()
   }
 }
 
-/*
- * タッチイベントの制御
- */
-// タッチイベント
-/*
-var touchStart = function(e) {
-  if (!gameEnd && !gamePaused) {
-    if (e.target.id == "roleButton") {        // ↑
-      e.preventDefault();
-      block.rotate();
-    } else if (e.target.id == "leftButton") { // ←
-      e.preventDefault();
-      lKeyPressed = true;
-      block.chkMoveLeft();
-    } else if (e.target.id == "rightButton") { // →
-      e.preventDefault();
-      rKeyPressed = true;
-      block.chkMoveRight();
-    } else if (e.target.id == "downButton") { // ↓
-      e.preventDefault();
-      block.moveDown(20);
-    } else if (e.target.id == "spaceButton" && !spacePressed) { // space 押しっぱなしチェック
+
+
+
+const touchEnd = (buttonID: "drop" | "left" | "right" | "down") =>  {
+  console.log("aiueo")
+  if (buttonID == "drop") {          // space
+    spacePressed = false;
+  } else if (buttonID == "left") {   // ←
+    lKeyPressed = false;
+    clearTimeout(lTimeout)
+  } else if (buttonID == "right") {   // →
+    rKeyPressed = false;
+    clearTimeout(rTimeout)
+  }else if(buttonID == "down"){
+  dKeyPressed = false;
+    clearTimeout(dTimeout)
+  }
+}
+
+const touchStart = (e: TouchEvent, buttonID: "drop" | "left" | "right" | "down") => {
+    if (!gameEnd && !gamePaused) {
+  switch(buttonID){
+    case "drop":{
       spacePressed = true;
       e.preventDefault();
-      block.dropDown();
+      controlBlock.dropDown();
+      break;
+    }
+    case 'left':{
+      e.preventDefault();
+      lKeyPressed = true;
+      moveLeft()
+      break;
+    }
+    case 'right':{
+      e.preventDefault()
+      rKeyPressed = true;
+      moveRight()
+      break;
+    }case 'down':{
+    e.preventDefault()
+    dKeyPressed = true;
+    moveDown()
+    break;
+  }
+}
+}
+}
+
+const clickButtons = (buttonID: "drop" | "down" | "left" | "right" | "rotateR" | "rotateL") => {
+  if (!gameEnd && !gamePaused) {
+    switch(buttonID){
+      case "drop":{
+        controlBlock.dropDown();
+        break;
+      }
+      case "down":{
+        controlBlock.moveDown();
+        break;
+      }
+      case "left":{
+        controlBlock.moveLeft()
+        break;
+      }
+      case "right":{
+        controlBlock. moveRight()
+        break;
+      }
+      case "rotateL":{
+        controlBlock.rotate2()
+        break;
+      }
+      case 'rotateR':{
+        controlBlock.rotate()
+        break;
+      }
     }
   }
-  
-  if (e.target.id == "pauseButton" && !gameEnd) {
-    if (gamePaused) {
-      gamePaused = false;
-    } else {
-      gamePaused = true;
-      gamePause();
-    }
-  }
 }
-var touchEnd = function(e) {
-  if (e.target.id == "spaceButton") {          // space
-    spacePressed = false;
-  } else if (e.target.id == "leftButton") {   // ←
-    lKeyPressed = false;
-  } else if (e.target.id == "rightButton") {   // →
-    rKeyPressed = false;
-  }
+
+const holdButtonClick = (holdID:number) => {
+  console.log(holdID)
+  if(!held[holdID]) controlBlock.hold(holdID)
 }
-var startupTouch = function() {
-  var elLeft = document.getElementById("leftButton");
-  elLeft.addEventListener("touchstart", touchStart, false);
-  elLeft.addEventListener("touchend", touchEnd, false);
-  //elLeft.addEventListener("touchcancel", handleCancel, false);
-  //elLeft.addEventListener("touchmove", handleMove, false);
-
-  var elRight = document.getElementById("rightButton");
-  elRight.addEventListener("touchstart", touchStart, false);
-  elRight.addEventListener("touchend", touchEnd, false);
-  //elRight.addEventListener("touchcancel", handleCancel, false);
-  //elRight.addEventListener("touchmove", handleMove, false);
-
-  var elRole = document.getElementById("roleButton");
-  elRole.addEventListener("touchstart", touchStart, false);
-  elRole.addEventListener("touchend", touchEnd, false);
-  //elRole.addEventListener("touchcancel", handleCancel, false);
-  //elRole.addEventListener("touchmove", handleMove, false);
-
-  var elDown = document.getElementById("downButton");
-  elDown.addEventListener("touchstart", touchStart, false);
-  elDown.addEventListener("touchend", touchEnd, false);
-  //elDown.addEventListener("touchcancel", handleCancel, false);
-  //elDown.addEventListener("touchmove", handleMove, false);
-
-  var elSpace = document.getElementById("spaceButton");
-  elSpace.addEventListener("touchstart", touchStart, false);
-  elSpace.addEventListener("touchend", touchEnd, false);
-  //elSpace.addEventListener("touchcancel", handleCancel, false);
-  //elSpace.addEventListener("touchmove", handleMove, false);
-
-  var elPause = document.getElementById("pauseButton");
-  elPause.addEventListener("touchstart", touchStart, false);
-  elPause.addEventListener("touchend", touchEnd, false);
-  //elPause.addEventListener("touchcancel", handleCancel, false);
-  //elPause.addEventListener("touchmove", handleMove, false);
-}
-*/
 
 /*
  * メインループ
  */
 // ゲームループ
 const loopGame = function () {
-  if (!gameEnd) {
-    if (!gamePaused) {
-      controlBlock.moveDown();
-      timeoutID = setTimeout(loopGame, speed);
-      removeLines();
-      drawGameField();
+  if(props.pausing){
+    gamePaused = true;
+    gamePause(tfield.value?.getContext("2d")!);
+  }else{
+    if (!gameEnd) {
+      if (!gamePaused) {
+        controlBlock.moveDown();
+        timeoutID = setTimeout(loopGame, speed);
+        removeLines();
+        drawGameField();
+      }
+    } else {
+      gameOver(tfield.value?.getContext("2d")!, score.value);
     }
-  } else {
-    gameOver(tfield.value?.getContext("2d")!, score.value);
   }
 }
 
@@ -726,12 +883,14 @@ const loopGame = function () {
 </script>
 
 <template>
-  <div id="gameArea">
+  <div>
+  <div id="gameArea" :class="{'fieldReverse': !props.left}">
 
     <div id="holdField">
       <div v-for="i in holdNum" :key="`hold${i}`">
         <div class="title">ホールド {{ i }}</div>
-        <canvas class="holdCanvas" :ref="setHoldFieldsRef"></canvas>
+        <canvas class="holdCanvas" :ref="setHoldFieldsRef"></canvas><br>
+        <button @click="holdButtonClick(i - 1)" class="holdButton">ホールド</button>
       </div>
     </div>
     <div id="gameField">
@@ -745,7 +904,7 @@ const loopGame = function () {
     </div>
 
   </div>
-  <div id="scoreBoard">
+  <div id="scoreBoard" :class="{'leftBoard':props.left}">
     <ul>
       <li>レベル <div>{{ level }}</div>
       </li>
@@ -760,7 +919,18 @@ const loopGame = function () {
     </ul>
   </div>
   <div id="buttonArea">
-    <button @click="confirmResetGame()" class="longButton" id="resetButton">ゲームをリセットする</button>
+
+    <button @click="clickButtons('rotateL')" class="controlButton rotateButton">↪</button>
+    <button @click="clickButtons('drop')" @touchstart="(e) => touchStart(e, 'drop')" @touchend="touchEnd('drop')" class="controlButton moveButton">⇓</button>
+    <button @click="clickButtons('rotateR')" class="controlButton rotateButton">↩</button>
+    <br>
+    <button @click="clickButtons('left')" @touchstart="(e) => touchStart(e, 'left')" @touchend="() => touchEnd('left')" class="controlButton moveButton">←</button>
+    <button @click="clickButtons('down')" @touchstart="(e) => touchStart(e, 'down')" @touchend="touchEnd('down')" class="controlButton moveButton">↓</button>
+    <button @click="clickButtons('right')" @touchstart="(e) => touchStart(e, 'right')" @touchend="() => touchEnd('right')" class="controlButton moveButton">→</button><br><br>
+
+    <button @click="pauseControl" @touchstart="pauseControl" class="longButton" id="pauseButton">ポーズする</button><br>
+    <button @click="confirmResetGame" @touchstart="confirmResetGame" class="longButton" id="resetButton">ゲームをリセットする</button><br>
+  </div>
   </div>
 </template>
 
@@ -779,15 +949,86 @@ const loopGame = function () {
   margin: 5px;
 }
 
+.controlButton{
+  padding : 5px;
+  border-radius: 5px;
+  height: 25px;
+  width: 25px;
+  border-color: transparent;
+  box-shadow: 1px, 2px rgba(0,0,0,0.2);
+  outline: none;
+  font-size: 18px;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+  margin: 5px;
+  transition-property: opacity;
+  transition-duration: 0.25s;
+  box-sizing: content-box;
+}
+
+.moveButton{
+    background-color: #88f;
+  background: -moz-linear-gradient(top, #88f, #22f );
+  color: white;
+}
+
+.rotateButton{
+      background-color: #8f8;
+  background: -moz-linear-gradient(top, #8f8, #2f2);
+  color: black;
+}
+
+.controlButton:hover{
+  opacity: 0.6;
+}
+
+.holdButton{
+  padding : 5px;
+  border-radius: 5px;
+  height: 25px;
+  width: 5em;
+  border-color: transparent;
+  box-shadow: 1px, 2px rgba(0,0,0,0.2);
+  outline: none;
+  font-size: 18px;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+  margin: 5px;
+  transition-property: opacity;
+  transition-duration: 0.25s;
+  box-sizing: content-box;
+      background-color: #888;
+      color:white;
+  background: -moz-linear-gradient(top, #888, #882);
+}
+
+.holdButton:hover{
+  opacity: 0.6;
+}
+
 #resetButton{
   background-color: #f64;
   background: -moz-linear-gradient(top, #f64, #f23 );
   color: white;
   transition-property: opacity;
   transition-duration: 0.25s;
+  width: 11em;
+  box-sizing: content-box;
 }
 
 #resetButton:hover{
+  opacity: 0.6;
+}
+
+#pauseButton{
+  background-color: #46f;
+  background: -moz-linear-gradient(top, #46f, #32f );
+  color: white;
+  transition-property: opacity;
+  transition-duration: 0.25s;
+  width: 11em;
+  box-sizing: content-box;
+}
+
+#pauseButton:hover{
   opacity: 0.6;
 }
 
@@ -797,11 +1038,17 @@ li {
 
 #scoreBoard {
   position: absolute;
-  right: 50px;
-  top: 180px;
+  top: 400px;
   background-color: antiquewhite;
   border-radius: 15px;
   z-index: 3;
+}
+
+#scoreBoard.leftBoard{
+  left:50px;
+}
+#scoreBoard:not(.leftBoard){
+  right: 50px;
 }
 
 #scoreBoard>ul {
@@ -817,6 +1064,10 @@ canvas {
   display: flex;
   margin: 0 auto;
   justify-content: center;
+}
+
+.fieldReverse{
+  flex-flow: row-reverse;
 }
 
 #gameCanvas {
