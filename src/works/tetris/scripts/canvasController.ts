@@ -53,9 +53,10 @@ var genNextBlock = function(cnext:CanvasRenderingContext2D, posX:number, posY:nu
 // 次のブロック生成
 export const drawNext = function(canvases: HTMLCanvasElement[], nextShape: number[], scale : (n: number) => number = () => 1) {
   for(let i = 0; i < canvases.length; i++){
+    if(!canvases[i]) continue;
   const canvas2d = canvases[i].getContext("2d")!
   clearNext(canvas2d);
-    if(nextShape[i] == -1) continue
+    if(nextShape[i] == -1 || nextShape[i] === undefined) continue
     
   
   const centerXtemp = shapes[nextShape[i]]["rot0"].map(e => e[0])

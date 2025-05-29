@@ -28,9 +28,10 @@ THE SOFTWARE.
 */
 
 import { gameOver, gamePause, drawNext, genBlock, genStrokedBlock } from './canvasController';
-import { bigBlockBox, blockNumHeight, blockNumWidth, blockSize, DLEffect, fieldColor, fieldHeight, fieldWidth, holdNum, nextNum, smallBlockBox, type shape, type shapeData} from './globalData';
+import { bigBlockBox, blockNumHeight, blockNumWidth, blockSize, DLEffect, fieldColor, fieldHeight, fieldWidth, holdNum, nextNum, smallBlockBox, startingShapes, dropShapes, getSettingObj, type shape, type shapeData} from './globalData';
 import { ref, onMounted,/*, onBeforeUpdate*/ 
-watch} from 'vue';
+watch,
+} from 'vue';
 import { shapes } from './shapes';
 
 const emit = defineEmits(['pauseButton', "resetPause"])
@@ -137,6 +138,8 @@ let linesRemoved = ref(0);
 let blocksDropped = ref(0);
 let fourLineRmoved = ref(0);
 
+
+
 /*
  * 状態を保持する変数の定義
  */
@@ -155,7 +158,7 @@ let disableDown = false;
 let held: boolean[] = []
 
 // ゲーム状態
-let gameEnd = false;
+let gameEnd = true;
 let gamePaused = false;
 let gameEffecting = false;
 
@@ -167,21 +170,27 @@ const holdFields = ref<HTMLCanvasElement[]>([])
 const setHoldFieldsRef = (el: any) => {
   if (el) {
     holdFields.value.push(el)
+    holdFields.value = holdFields.value.filter((e) => !!e)
+    el.width = bigBlockBox;
+    el.height = bigBlockBox;
+    if(!gameEnd) drawNext(holdFields.value, holdShapes)
   }
 }
 const nextFields = ref<HTMLCanvasElement[]>([])
 const setNextFieldsRef = (el: any) => {
   if (el) {
-    console.log(el)
     nextFields.value.push(el)
+    el.width = nextFields.value.length <= 1 ? bigBlockBox : smallBlockBox;
+    el.height = nextFields.value.length <= 1 ? bigBlockBox : smallBlockBox;
   }
 }
+
+
 /*
 onBeforeUpdate(() => {
-  holdFields.value = [];
-  nextFields.value = [];
 })
-  */
+*/
+  
 
 onMounted(() => {
   resetGame();
@@ -195,9 +204,13 @@ function resetGame() {
   gamePaused = false
   }
   clearTimeout(timeoutID)
-  nextShape = [activeShapes[Math.floor(Math.random() * activeShapes.length)]]
-  holdShapes = new Array(holdNum).fill(-1);
-  fields = new Array(blockNumHeight).fill("").map(_ => emptyLine.slice());
+  getSettingObj()
+    holdFields.value = holdFields.value.filter((e) => !!e)
+    nextFields.value = nextFields.value.filter((e) => !!e)
+  nextShape = [startingShapes[Math.floor(Math.random() * startingShapes.length)]]
+  holdShapes = new Array(Number(holdNum)).fill(-1);
+  emptyLine = new Array(Number(blockNumWidth)).fill(fieldColor);
+  fields = new Array(Number(blockNumHeight)).fill("").map(_ => emptyLine.slice());
   level.value = 1
   score.value = 0;
   speed = 700 - (level.value * 50);
@@ -208,22 +221,7 @@ function resetGame() {
     tfield.value.width = fieldWidth;
     tfield.value.height = fieldHeight;
   }
-  let isFirstNext = true;
-  for (const elem of nextFields.value) {
-    elem.width = isFirstNext ? bigBlockBox : smallBlockBox;
-    elem.height = isFirstNext ? bigBlockBox : smallBlockBox;
-    isFirstNext = false;
-  }
-  for (const elem of holdFields.value) {
-    elem.width = bigBlockBox;
-    elem.height = bigBlockBox;
-  }
-
-  //window.setTimeout(() => {score.value = 250}, 2500)
-
-  //gameOver(tfield.value?.getContext("2d")!, fieldWidth, fieldHeight, score.value)
-  //gamePause(tfield.value?.getContext("2d")!, fieldWidth, fieldHeight)
-  fields[blockNumHeight] = ["black", "black", "black", "black", "black", "black", "black", "black", "black", "black"];
+  fields[blockNumHeight] = new Array(Number(blockNumWidth)).fill("black");
   randomBlocks()
   drawNext(nextFields.value, nextShape, (n) => n == 0 ? 1 : 0.5)
   drawNext(holdFields.value, holdShapes)
@@ -231,6 +229,7 @@ function resetGame() {
   removeLines()
   controlBlock.reset()
   //startupTouch();
+  gameEnd = false;
   loopGame();
 }
 
@@ -240,20 +239,19 @@ function resetGame() {
  * ゲームスタートのための初期化
  */
 // テトリミノ種類
-const activeShapes = [2, 3, 5, 6];
-const allShapes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13/* ,14, 15, 16,17,18*/];
+
 let nextShape: number[] = []
 
 let holdShapes: number[] = [];
 
 const randomBlocks = function () {
   while (nextShape.length < nextNum) {
-    nextShape.push(allShapes[Math.floor(Math.random() * allShapes.length)])
+    nextShape.push(dropShapes[Math.floor(Math.random() * dropShapes.length)])
   }
 }
 
 // フィールド初期化
-const emptyLine: string[] = new Array(blockNumWidth).fill(fieldColor);
+let emptyLine: string[] = new Array(Number(blockNumWidth)).fill(fieldColor);
 let fields: string[][] = []
 const controlBlock: {
   shape: shapeData,
@@ -548,7 +546,13 @@ const controlBlock: {
   // テトリミノ描画
   draw: () => {
     for (var i = 0; i < controlBlock.shape[`rot${controlBlock.pos}` as "rot1"].length; i++) {
-      genStrokedBlock(tfield.value!, (controlBlock.X + (controlBlock.shape[`rot${controlBlock.pos}` as "rot1"][i][0] * blockSize)), (controlBlock.Y + (controlBlock.shape[`rot${controlBlock.pos}` as "rot1"][i][1] * blockSize)), controlBlock.color, fieldColor);
+      genStrokedBlock(
+        tfield.value!,
+        (controlBlock.X + (controlBlock.shape[`rot${controlBlock.pos}` as "rot1"][i][0] * blockSize)),
+        (controlBlock.Y + (controlBlock.shape[`rot${controlBlock.pos}` as "rot1"][i][1] * blockSize)), 
+        controlBlock.color,
+        fieldColor
+      );
     }
   },
 
@@ -562,6 +566,7 @@ const controlBlock: {
         (ghostPos[1] + (controlBlock.shape[`rot${controlBlock.pos}` as "rot1"][i][1] * blockSize)),
         "rgba(250,250,250,0.1)",
         "rgba(250,250,250,0.2)"
+        
       );
     }
   }
@@ -868,6 +873,7 @@ const loopGame = function () {
   }else{
     if (!gameEnd) {
       if (!gamePaused) {
+        console.log("a")
         controlBlock.moveDown();
         timeoutID = setTimeout(loopGame, speed);
         removeLines();
