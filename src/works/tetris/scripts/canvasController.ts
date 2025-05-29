@@ -5,7 +5,8 @@ import { shapes } from "./shapes";
 
 // ブロック生成
 export const genBlock = function(canvas: HTMLCanvasElement, posX: number, posY: number, color: string) {
-    const cfield = canvas.getContext("2d")!
+  if(!canvas) return ;
+  const cfield = canvas.getContext("2d")!
   cfield.fillStyle = color;
   cfield.beginPath();
   cfield.rect(posX * blockSize, posY * blockSize, blockSize, blockSize);
@@ -52,6 +53,7 @@ var genNextBlock = function(cnext:CanvasRenderingContext2D, posX:number, posY:nu
 };
 // 次のブロック生成
 export const drawNext = function(canvases: HTMLCanvasElement[], nextShape: number[], scale : (n: number) => number = () => 1) {
+  console.log(canvases)
   for(let i = 0; i < canvases.length; i++){
     if(!canvases[i]) continue;
   const canvas2d = canvases[i].getContext("2d")!

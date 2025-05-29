@@ -180,8 +180,12 @@ const nextFields = ref<HTMLCanvasElement[]>([])
 const setNextFieldsRef = (el: any) => {
   if (el) {
     nextFields.value.push(el)
+    //nextFields.value = nextFields.value.filter((e) => e.parentElement?.parentElement)
     el.width = nextFields.value.length <= 1 ? bigBlockBox : smallBlockBox;
     el.height = nextFields.value.length <= 1 ? bigBlockBox : smallBlockBox;
+    if(!gameEnd){
+        drawNext(nextFields.value, nextShape, (n) => n == 0 ? 1 : 0.5)
+    }
   }
 }
 
@@ -206,7 +210,7 @@ function resetGame() {
   clearTimeout(timeoutID)
   getSettingObj()
     holdFields.value = holdFields.value.filter((e) => !!e)
-    nextFields.value = nextFields.value.filter((e) => !!e)
+    nextFields.value = nextFields.value.filter((e) => e.parentElement?.parentElement)
   nextShape = [startingShapes[Math.floor(Math.random() * startingShapes.length)]]
   holdShapes = new Array(Number(holdNum)).fill(-1);
   emptyLine = new Array(Number(blockNumWidth)).fill(fieldColor);
@@ -245,9 +249,10 @@ let nextShape: number[] = []
 let holdShapes: number[] = [];
 
 const randomBlocks = function () {
-  while (nextShape.length < nextNum) {
+  while (nextShape.length <= nextNum) {
     nextShape.push(dropShapes[Math.floor(Math.random() * dropShapes.length)])
   }
+  console.log(nextShape)
 }
 
 // フィールド初期化
