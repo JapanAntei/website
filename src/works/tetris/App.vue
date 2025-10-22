@@ -35,7 +35,7 @@ const firstKeyboardAlias = {'→': 'D', '←' : 'A', '↓': 'S', '↑': 'E', '_'
         @pause-button="pause" @reset-pause="resetPause" :pausing="pausing" />
       <!-- <Tetris :left="false" 
         :key-binds="secondKeyBinds"
-        @pause-button="pause" @reset-pause="resetPause" :pausing="pausing" /> -->
+        @pause-button="pause" @reset-pause="resetPause" :pausing="pausing" /> <!-- -->
     </div>
     <div style="display: flex;justify-content: center;">
       <TetrisSetting settting-id="GoMeTetrisSettings"></TetrisSetting>

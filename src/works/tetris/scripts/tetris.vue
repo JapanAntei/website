@@ -28,7 +28,7 @@ THE SOFTWARE.
 */
 
 import { gameOver, gamePause, drawNext, genBlock, genStrokedBlock } from './canvasController';
-import { bigBlockBox, blockNumHeight, blockNumWidth, blockSize, DLEffect, fieldColor, fieldHeight, fieldWidth, holdNum, nextNum, smallBlockBox, startingShapes, dropShapes, getSettingObj, type shape, type shapeData} from './globalData';
+import { bigBlockBox, blockNumHeight, blockNumWidth, blockSize, DLEffect, fieldColor, fieldHeight, fieldWidth, holdNum, nextNum, smallBlockBox, startingShapes, dropShapes, getSettingObj, type shape, type shapeData, randomType} from './globalData';
 import { ref, onMounted,/*, onBeforeUpdate*/ 
 watch,
 } from 'vue';
@@ -152,7 +152,7 @@ let lTimeout: NodeJS.Timeout;
 let rTimeout: NodeJS.Timeout;
 let dTimeout: NodeJS.Timeout;
 let sensitivity = 240;
-let checkLongPress = 400
+let checkLongPress = 500
 let disableDown = false;
 
 let held: boolean[] = []
@@ -180,7 +180,6 @@ const nextFields = ref<HTMLCanvasElement[]>([])
 const setNextFieldsRef = (el: any) => {
   if (el) {
     nextFields.value.push(el)
-    //nextFields.value = nextFields.value.filter((e) => e.parentElement?.parentElement)
     el.width = nextFields.value.length <= 1 ? bigBlockBox : smallBlockBox;
     el.height = nextFields.value.length <= 1 ? bigBlockBox : smallBlockBox;
     if(!gameEnd){
@@ -209,8 +208,18 @@ function resetGame() {
   }
   clearTimeout(timeoutID)
   getSettingObj()
-    holdFields.value = holdFields.value.filter((e) => !!e)
+    holdFields.value = holdFields.value.filter((e) => e.parentElement?.parentElement)
     nextFields.value = nextFields.value.filter((e) => e.parentElement?.parentElement)
+  let isFirst = true;
+  for(const el of nextFields.value){
+    el.width = isFirst ? bigBlockBox : smallBlockBox;
+    el.height = isFirst ? bigBlockBox : smallBlockBox;
+    isFirst = false;
+  }
+  for(const el of holdFields.value){
+    el.width = bigBlockBox
+    el.height = bigBlockBox
+  }
   nextShape = [startingShapes[Math.floor(Math.random() * startingShapes.length)]]
   holdShapes = new Array(Number(holdNum)).fill(-1);
   emptyLine = new Array(Number(blockNumWidth)).fill(fieldColor);
@@ -247,12 +256,21 @@ function resetGame() {
 let nextShape: number[] = []
 
 let holdShapes: number[] = [];
+let randomtempShapes: number[] = [];
 
 const randomBlocks = function () {
   while (nextShape.length <= nextNum) {
-    nextShape.push(dropShapes[Math.floor(Math.random() * dropShapes.length)])
+    if(randomType){
+        nextShape.push(dropShapes[Math.floor(Math.random() * dropShapes.length)])
+    }else{
+      if(randomtempShapes.length == 0){
+        randomtempShapes = structuredClone(dropShapes)
+      }
+      const randomIndex = Math.floor(Math.random() * randomtempShapes.length)
+      nextShape.push(randomtempShapes[randomIndex])
+      randomtempShapes.splice(randomIndex, 1)
+    }
   }
-  console.log(nextShape)
 }
 
 // フィールド初期化
@@ -652,6 +670,9 @@ const drawGameField = function () {
 
 // 押しっぱなし左移動
 const moveLeft = function (isFirst = true) {
+  if (gamePaused){
+    lKeyPressed = false;
+  }
   if (lKeyPressed) {
     controlBlock.moveLeft();
         lTimeout = setTimeout(() => moveLeft(false), isFirst ? checkLongPress : sensitivity);
@@ -660,12 +681,18 @@ const moveLeft = function (isFirst = true) {
 
 // 押しっぱなし右移動
 const moveRight = function (isFirst = true) {
+  if (gamePaused){
+    rKeyPressed = false;
+  }
   if (rKeyPressed) {
     controlBlock.moveRight();
     rTimeout = setTimeout(() => moveRight(false), isFirst ? checkLongPress : sensitivity);
   }
 }
 const moveDown = function (isFirst = true) {
+  if (gamePaused){
+    dKeyPressed = false;
+  }
   if (dKeyPressed) {
     controlBlock.moveDown();
     dTimeout = setTimeout(() => moveDown(false), isFirst ? checkLongPress : sensitivity);
@@ -708,7 +735,7 @@ document.addEventListener("keyup", (e) => {
   } else if (equalKeyCode(props.keyBinds.right, keycode)) {   // →
     rKeyPressed = false;
     clearTimeout(rTimeout)
-  } else if (equalKeyCode(props.keyBinds.down, keycode)) {   // →
+  } else if (equalKeyCode(props.keyBinds.down, keycode)) {   // ↓
     dKeyPressed = false;
     disableDown = false;
     clearTimeout(dTimeout)
@@ -733,8 +760,8 @@ document.addEventListener("keydown",(e) => {
     } else if (equalKeyCode(props.keyBinds.down, keycode)) { // ↓
       e.preventDefault();
       if(!disableDown){
-      dKeyPressed = true;
-      moveDown();
+        dKeyPressed = true;
+        moveDown();
       }
     } else if (equalKeyCode(props.keyBinds.drop, keycode) && !spacePressed) { // space 押しっぱなしチェック
       spacePressed = true;
@@ -878,7 +905,6 @@ const loopGame = function () {
   }else{
     if (!gameEnd) {
       if (!gamePaused) {
-        console.log("a")
         controlBlock.moveDown();
         timeoutID = setTimeout(loopGame, speed);
         removeLines();

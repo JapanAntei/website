@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useTemplateRef } from 'vue';
-import { getSettingObj } from '../scripts/globalData';
+import { defaultSettings, getSettingObj } from '../scripts/globalData';
 
 
 const props = defineProps({
@@ -15,15 +15,27 @@ const blockNumHeight = useTemplateRef("blockNumHeight")
 const blockNumWidth = useTemplateRef("blockNumWidth")
 const nextNum = useTemplateRef("nextNum")
 const holdNum = useTemplateRef("holdNum")
+const randomType = useTemplateRef("randomType")
 
 const saveSettings = () => {
     localStorage.setItem(props.setttingId ?? "GoMeTetrisSettings", JSON.stringify({
-        blockSize: blockSize.value?.value,
-        blockNumHeight: blockNumHeight.value?.value,
-        blockNumWidth: blockNumWidth.value?.value,
-        nextNum: nextNum.value?.value,
-        holdNum: holdNum.value?.value
+        blockSize: Number(blockSize.value?.value),
+        blockNumHeight: Number(blockNumHeight.value?.value),
+        blockNumWidth: Number(blockNumWidth.value?.value),
+        nextNum: Number(nextNum.value?.value),
+        holdNum: Number(holdNum.value?.value),
+        randomType: randomType.value?.checked
     }))
+}
+
+const resetSettings = () => {
+    localStorage.setItem(props.setttingId ?? "GoMeTetrisSettings", `{}`)
+    if(blockSize.value) blockSize.value.value = defaultSettings.blockSize.toString()
+    if(blockNumHeight.value) blockNumHeight.value.value = defaultSettings.blockNumHeight.toString()
+    if(blockNumWidth.value) blockNumWidth.value.value = defaultSettings.blockNumWidth.toString()
+    if(nextNum.value) nextNum.value.value = defaultSettings.nextNum.toString()
+    if(holdNum.value) holdNum.value.value = defaultSettings.holdNum.toString()
+    if(randomType.value) randomType.value.checked = defaultSettings.randomType;
 }
 
 </script>
@@ -45,6 +57,10 @@ const saveSettings = () => {
                 <label for="blockNumWidth">フィールドの横のブロック数</label>
                 <input ref="blockNumWidth" type="number" id="blockNumWidth" min="1" :value="settings.blockNumWidth" />
             </li>
+            <li style="vertical-align: top">
+                <input ref="randomType" type="checkbox" id="randomType" :checked="settings.randomType">
+                <label for="randomType" style="display: inline-block;">ミノ抽選を完全ランダムにする</label>
+            </li>
 
         </ul>
         <h3>画面表示について</h3>
@@ -60,6 +76,7 @@ const saveSettings = () => {
 
         </ul>
             <button @click="saveSettings">設定を保存する</button>
+            <button @click="resetSettings">設定をリセットする</button>
     </details>
 </template>
 
