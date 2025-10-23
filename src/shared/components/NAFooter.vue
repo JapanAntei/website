@@ -18,8 +18,6 @@ footer{
   display: flex;
   color: white;
   justify-content:center;
-  width: 100%;
-  
 }
 
 .verticalContainer{

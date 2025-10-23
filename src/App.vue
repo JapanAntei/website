@@ -34,8 +34,9 @@ import NAFooter from '@shared/components/NAFooter.vue';
   position:absolute;
   display: flex;
 }
-
-
+#slogan{
+  font-size: 70px;
+}
 
 #sloganBox > div{
   flex: 1;
@@ -63,13 +64,8 @@ import NAFooter from '@shared/components/NAFooter.vue';
   font-style: normal;
 }
 
-#slogan{
-  font-size: 3rem;
+main{
+  margin-bottom: 30px;
+  margin-bottom: 30px;
 }
-@media (min-width: 1000px){
-  #slogan{
-  font-size: 4.5rem;
-}
-}
-
 </style>
