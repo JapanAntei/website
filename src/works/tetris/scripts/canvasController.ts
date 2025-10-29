@@ -53,7 +53,6 @@ var genNextBlock = function(cnext:CanvasRenderingContext2D, posX:number, posY:nu
 };
 // 次のブロック生成
 export const drawNext = function(canvases: HTMLCanvasElement[], nextShape: number[], scale : (n: number) => number = () => 1) {
-  console.log(canvases)
   for(let i = 0; i < canvases.length; i++){
     if(!canvases[i]) continue;
   const canvas2d = canvases[i].getContext("2d")!
@@ -61,16 +60,16 @@ export const drawNext = function(canvases: HTMLCanvasElement[], nextShape: numbe
     if(nextShape[i] == -1 || nextShape[i] === undefined) continue
     
   
-  const centerXtemp = shapes[nextShape[i]]["rot0"].map(e => e[0])
+  const centerXtemp = shapes[nextShape[i]]["shapes"][0].map(e => e[0])
   const offsetW = (bigBlockBox - (Math.max(...centerXtemp) - Math.min(...centerXtemp) + 1) * blockSize) / 2;
 
-    const centerYtemp = shapes[nextShape[i]]["rot0"].map(e => e[1])
+    const centerYtemp = shapes[nextShape[i]]["shapes"][0].map(e => e[1])
   const offsetH = (bigBlockBox - (Math.max(...centerYtemp) - Math.min(...centerYtemp) + 1) * blockSize) / 2;
-  for (let j=0; j<shapes[nextShape[i]]["rot0"].length; j++) {
+  for (let j=0; j<shapes[nextShape[i]]["shapes"][0].length; j++) {
     genNextBlock(
       canvas2d,
-      offsetW + (shapes[nextShape[i]]["rot0"][j][0] - Math.min(...centerXtemp)) * blockSize,
-      offsetH + (shapes[nextShape[i]]["rot0"][j][1] - Math.min(...centerYtemp)) * blockSize,
+      offsetW + (shapes[nextShape[i]]["shapes"][0][j][0] - Math.min(...centerXtemp)) * blockSize,
+      offsetH + (shapes[nextShape[i]]["shapes"][0][j][1] - Math.min(...centerYtemp)) * blockSize,
       shapes[nextShape[i]]["color"],
       scale(i)
     );

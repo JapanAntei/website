@@ -1,9 +1,6 @@
 export type shape = [number, number][];
 export type shapeData = {
-    rot0: shape;
-    rot1: shape;
-    rot2: shape;
-    rot3: shape;
+    shapes: [shape, shape, shape, shape];
     color: string;
 };
 export type shapesData = shapeData[];

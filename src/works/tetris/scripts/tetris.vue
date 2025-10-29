@@ -326,7 +326,7 @@ const controlBlock: {
   // テトリミノ回転 (時計回り)
   rotate: () => {
     const new_pos = (controlBlock.pos + 1) & 3;
-    const sh = controlBlock.shape[`rot${new_pos}` as "rot1"];
+    const sh = controlBlock.shape.shapes[new_pos];
     if (!controlBlock.collision(controlBlock.X, controlBlock.Y, sh)) {
       controlBlock.pos = new_pos;
       drawGameField();
@@ -354,7 +354,7 @@ const controlBlock: {
   rotate2: () => {
 
     const new_pos = (controlBlock.pos - 1) & 3;
-    const sh = controlBlock.shape[`rot${new_pos}` as "rot1"];
+    const sh = controlBlock.shape.shapes[new_pos];
     if (!controlBlock.collision(controlBlock.X, controlBlock.Y, sh)) {
       controlBlock.pos = new_pos;
       drawGameField();
@@ -383,8 +383,7 @@ const controlBlock: {
   // 位置
   position: (x, y) => {
     const arr = [];
-    const rotIndex = `rot${controlBlock.pos}` as "rot1"
-    const rotShape = controlBlock.shape[rotIndex]
+    const rotShape = controlBlock.shape.shapes[controlBlock.pos]
     for (const zahyo of rotShape) {
 
       const cx = Math.floor(((x + (zahyo[0] * blockSize)) / blockSize));
@@ -410,7 +409,7 @@ const controlBlock: {
     const pos = controlBlock.position(controlBlock.X, controlBlock.Y);
     let highestBlock = blockNumHeight - 1;
     let lowestBlock = -2;
-    for (var i = 0; i < controlBlock.shape[`rot${controlBlock.pos}` as "rot1"].length; i++) {
+    for (var i = 0; i < controlBlock.shape.shapes[controlBlock.pos].length; i++) {
       for (var y = 0; y < fields.length; y++) {
         if (fields[y][pos[i][0]] != fieldColor && y > pos[i][1]) {
           if (y < highestBlock) {
@@ -418,8 +417,8 @@ const controlBlock: {
           }
         }
       }
-      if (controlBlock.shape[`rot${controlBlock.pos}` as "rot1"][i][1] > lowestBlock) {
-        lowestBlock = controlBlock.shape[`rot${controlBlock.pos}` as "rot1"][i][1];
+      if (controlBlock.shape.shapes[controlBlock.pos][i][1] > lowestBlock) {
+        lowestBlock = controlBlock.shape.shapes[controlBlock.pos][i][1];
       }
     }
 
@@ -446,9 +445,9 @@ const controlBlock: {
   // テトリミノダウン処理
   moveDown: () => {
     controlBlock.Y += blockSize;
-    for (var i = 0; i < controlBlock.shape[`rot${controlBlock.pos}` as "rot1"].length; i++) {
-      const cx = Math.floor(((controlBlock.X + (controlBlock.shape[`rot${controlBlock.pos}` as "rot1"][i][0] * blockSize)) / blockSize));
-      const cy = Math.floor(((controlBlock.Y + (controlBlock.shape[`rot${controlBlock.pos}` as "rot1"][i][1] * blockSize)) / blockSize));
+    for (var i = 0; i < controlBlock.shape.shapes[controlBlock.pos].length; i++) {
+      const cx = Math.floor(((controlBlock.X + (controlBlock.shape.shapes[controlBlock.pos][i][0] * blockSize)) / blockSize));
+      const cy = Math.floor(((controlBlock.Y + (controlBlock.shape.shapes[controlBlock.pos][i][1] * blockSize)) / blockSize));
       if (cx > -1 && cy > -1) {
         if (fields[cy][cx] != fieldColor || cy == blockNumHeight) {
           controlBlock.kill();
@@ -501,7 +500,7 @@ const controlBlock: {
   dropDown: () => {
     const ghostPos = controlBlock.getShadowPos();
     const pos = controlBlock.position(ghostPos[0], ghostPos[1]);
-    for (var i = 0; i < controlBlock.shape[`rot${controlBlock.pos}` as "rot1"].length; i++) {
+    for (var i = 0; i < controlBlock.shape.shapes[controlBlock.pos].length; i++) {
       if (fields[pos[i][1]] != undefined)
         fields[pos[i][1]][pos[i][0]] = controlBlock.color;
     }
@@ -518,7 +517,7 @@ const controlBlock: {
     if (pos[0][1] < 0) {
       gameEnd = true;
     }
-    for (let i = 0; i < controlBlock.shape[`rot${controlBlock.pos}` as "rot1"].length; i++) {
+    for (let i = 0; i < controlBlock.shape.shapes[controlBlock.pos].length; i++) {
       const kx = pos[i][0];
       const ky = pos[i][1];
       if (kx > -1 && ky > -1) {
@@ -533,7 +532,7 @@ const controlBlock: {
       const curX = controlBlock.X;
       const curY = controlBlock.Y;
       const pos = controlBlock.position(curX, curY);
-      for (let i = 0; i < controlBlock.shape[`rot${controlBlock.pos}` as "rot1"].length; i++) {
+      for (let i = 0; i < controlBlock.shape.shapes[controlBlock.pos].length; i++) {
         const kx = pos[i][0];
         const ky = pos[i][1];
         if (kx > -1 && ky > -1) {
@@ -568,11 +567,11 @@ const controlBlock: {
 
   // テトリミノ描画
   draw: () => {
-    for (var i = 0; i < controlBlock.shape[`rot${controlBlock.pos}` as "rot1"].length; i++) {
+    for (var i = 0; i < controlBlock.shape.shapes[controlBlock.pos].length; i++) {
       genStrokedBlock(
         tfield.value!,
-        (controlBlock.X + (controlBlock.shape[`rot${controlBlock.pos}` as "rot1"][i][0] * blockSize)),
-        (controlBlock.Y + (controlBlock.shape[`rot${controlBlock.pos}` as "rot1"][i][1] * blockSize)), 
+        (controlBlock.X + (controlBlock.shape.shapes[controlBlock.pos][i][0] * blockSize)),
+        (controlBlock.Y + (controlBlock.shape.shapes[controlBlock.pos][i][1] * blockSize)), 
         controlBlock.color,
         fieldColor
       );
@@ -582,11 +581,11 @@ const controlBlock: {
   // テトリミノ影描画
   drawShadow: () => {
     const ghostPos = controlBlock.getShadowPos();
-    for (var i = 0; i < controlBlock.shape[`rot${controlBlock.pos}` as "rot1"].length; i++) {
+    for (var i = 0; i < controlBlock.shape.shapes[controlBlock.pos].length; i++) {
       genStrokedBlock(
         tfield.value!,
-        (ghostPos[0] + (controlBlock.shape[`rot${controlBlock.pos}` as "rot1"][i][0] * blockSize)),
-        (ghostPos[1] + (controlBlock.shape[`rot${controlBlock.pos}` as "rot1"][i][1] * blockSize)),
+        (ghostPos[0] + (controlBlock.shape.shapes[controlBlock.pos][i][0] * blockSize)),
+        (ghostPos[1] + (controlBlock.shape.shapes[controlBlock.pos][i][1] * blockSize)),
         "rgba(250,250,250,0.1)",
         "rgba(250,250,250,0.2)"
         

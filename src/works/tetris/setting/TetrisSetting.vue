@@ -61,6 +61,7 @@ const resetSettings = () => {
                 <input ref="randomType" type="checkbox" id="randomType" :checked="settings.randomType">
                 <label for="randomType" style="display: inline-block;">ミノ抽選を完全ランダムにする</label>
             </li>
+            
 
         </ul>
         <h3>画面表示について</h3>
@@ -75,6 +76,7 @@ const resetSettings = () => {
             </li>
 
         </ul>
+        <!--<h3>ミノの種類</h3>-->
             <button @click="saveSettings">設定を保存する</button>
             <button @click="resetSettings">設定をリセットする</button>
     </details>
