@@ -28,7 +28,7 @@ THE SOFTWARE.
 */
 
 import { gameOver, gamePause, drawNext, genBlock, genStrokedBlock } from './canvasController';
-import { bigBlockBox, blockNumHeight, blockNumWidth, blockSize, DLEffect, fieldColor, fieldHeight, fieldWidth, holdNum, nextNum, smallBlockBox, startingShapes, dropShapes, getSettingObj, type shape, type shapeData, randomType} from './globalData';
+import { bigBlockBox, blockNumHeight, blockNumWidth, blockSize, DLEffect, fieldColor, fieldHeight, fieldWidth, holdNum, nextNum, smallBlockBox, startingShapes, dropShapes, getSettingObj, type shape, type shapeData, randomType, rotateSystem} from './globalData';
 import { ref, onMounted,/*, onBeforeUpdate*/ 
 watch,
 } from 'vue';
@@ -283,9 +283,9 @@ const controlBlock: {
   X: number,
   Y: number,
   rot: number,
+  rotateType: number,
   reset: () => unknown
-  rotate: () => unknown
-  rotate2: () => unknown
+  rotate: (rotateDirection: -1 | 1) => unknown
   collision: (x: number, y: number, s?: shape) => boolean,
   getShadowPos: () => number[]
   moveDown: () => unknown
@@ -304,6 +304,7 @@ const controlBlock: {
   X: 0,
   Y: -1,
   rot: 0,
+  rotateType: 0,
   reset: () => {
     if(dKeyPressed){
       disableDown = true;
@@ -316,67 +317,264 @@ const controlBlock: {
     controlBlock.Y = -1
     controlBlock.color = controlBlock.shape.color
     controlBlock.rot = 0
+    controlBlock.rotateType = controlBlock.shape.rotateType ?? 0;
     blocksDropped.value += 1;
     randomBlocks()
     held = held.map(_ => false)
     drawNext(nextFields.value, nextShape, (n) => n == 0 ? 1 : 0.5)
   },
   // テトリミノ回転 (時計回り)
-  rotate: () => {
-    const new_rot = (controlBlock.rot + 1) & 3;
+  rotate: (rotateDirection: -1 | 1) => {
+    const new_rot = (controlBlock.rot + rotateDirection) & 3;
     const sh = controlBlock.shape.shapes[new_rot];
     if (!controlBlock.collision(0, 0, sh)) {
       controlBlock.rot = new_rot;
       drawGameField();
     } else {
-      if (!controlBlock.collision(1, 0, sh)) {
-        controlBlock.rot = new_rot;
-        controlBlock.X++;
-        drawGameField();
-      } else if (!controlBlock.collision(-1,0, sh)) {
-        controlBlock.rot = new_rot;
-        controlBlock.X--;
-        drawGameField();
-      } else if (!controlBlock.collision(2,0, sh)) {
-        controlBlock.rot = new_rot;
-        controlBlock.X +=2;
-        drawGameField();
-      } else if (!controlBlock.collision(-2, 0, sh)) {
-        controlBlock.X -=2;
-        controlBlock.rot = new_rot;
-        drawGameField();
+      if(rotateSystem){
+        if(controlBlock.rotateType === 0){
+          if(new_rot === 0){
+            if(!controlBlock.collision(-rotateDirection,0,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -rotateDirection;
+              drawGameField();
+            } else if(!controlBlock.collision(-rotateDirection,1,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -rotateDirection;
+              controlBlock.Y += 1;
+              drawGameField();
+            }else if(!controlBlock.collision(0,-2,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.Y += -2;
+              drawGameField();
+            }else if(!controlBlock.collision(-rotateDirection,-2,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -rotateDirection;
+              controlBlock.Y += -2;
+              drawGameField();
+            }
+          } else if(new_rot === 1){
+            if(!controlBlock.collision(-1,0,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -1;
+              drawGameField();
+            } else if(!controlBlock.collision(-1,-1,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -1;
+              controlBlock.Y += -1;
+              drawGameField();
+            }else if(!controlBlock.collision(0,2,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.Y += 2;
+              drawGameField();
+            }else if(!controlBlock.collision(-1,2,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -1;
+              controlBlock.Y += 2;
+              drawGameField();
+            }
+          } else if(new_rot === 2){
+            if(!controlBlock.collision(-rotateDirection,0,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -rotateDirection;
+              drawGameField();
+            } else if(!controlBlock.collision(-rotateDirection,-1,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -rotateDirection;
+              controlBlock.Y += -1;
+              drawGameField();
+            }else if(!controlBlock.collision(0,-2,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.Y += -2;
+              drawGameField();
+            }else if(!controlBlock.collision(-rotateDirection,-2,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -rotateDirection;
+              controlBlock.Y += -2;
+              drawGameField();
+            }
+          } else if(new_rot === 3){
+            if(!controlBlock.collision(1,0,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += 1;
+              drawGameField();
+            } else if(!controlBlock.collision(1,-1,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += 1;
+              controlBlock.Y += -1;
+              drawGameField();
+            }else if(!controlBlock.collision(0,2,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.Y += 2;
+              drawGameField();
+            }else if(!controlBlock.collision(1,2,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += 1;
+              controlBlock.Y += 2;
+              drawGameField();
+            }
+          }
+        } else if(controlBlock.rotateType === 1){
+          if(new_rot === 0){
+            if(!controlBlock.collision(-2 * rotateDirection,0,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -2 * rotateDirection;
+              drawGameField();
+            } else if(!controlBlock.collision(rotateDirection,0,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += rotateDirection;
+              drawGameField();
+            }else if(controlBlock.rot == 1 && !controlBlock.collision(2,-1,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += 2;
+              controlBlock.Y += -1
+              drawGameField();
+            }else if(controlBlock.rot == 3 && !controlBlock.collision(1,2,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += 1;
+              controlBlock.Y += 2
+              drawGameField();
+            }else if(controlBlock.rot == 1 && !controlBlock.collision(-1,2,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -1;
+              controlBlock.Y += 2;
+              drawGameField();
+            }else if(controlBlock.rot == 3 && !controlBlock.collision(-2,-1,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -2;
+              controlBlock.Y += -1;
+              drawGameField();
+            }
+          } else if(new_rot === 1){
+            if(controlBlock.rot == 0 && !controlBlock.collision(-2,0,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -2;
+              drawGameField();
+            } else if(controlBlock.rot == 2 && !controlBlock.collision(1,0,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += 1;
+              drawGameField();
+            } else if(controlBlock.rot == 0 && !controlBlock.collision(1,0,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -2;
+              drawGameField();
+            } else if(controlBlock.rot == 2 && !controlBlock.collision(-2,0,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += 1;
+              drawGameField();
+            } else if(controlBlock.rot == 0 && !controlBlock.collision(-2,1,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -2;
+              controlBlock.Y += 1;
+              drawGameField();
+            } else if(controlBlock.rot == 2 && !controlBlock.collision(1,2,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += 1;
+              controlBlock.Y += 2;
+              drawGameField();
+            } else if(controlBlock.rot == 0 && !controlBlock.collision(1,-2,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += 1;
+              controlBlock.Y += -2;
+              drawGameField();
+            } else if(controlBlock.rot == 2 && !controlBlock.collision(-2,-1,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -2;
+              controlBlock.Y += -1;
+              drawGameField();
+            }
+          } else if(new_rot === 2){
+            if(!controlBlock.collision(-rotateDirection,0,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -rotateDirection;
+              drawGameField();
+            } else if(!controlBlock.collision(2 * rotateDirection,0,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += 2 * rotateDirection;
+              drawGameField();
+            }else if(controlBlock.rot == 1 && !controlBlock.collision(-1,-2,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -1;
+              controlBlock.Y += -2
+              drawGameField();
+            }else if(controlBlock.rot == 3 && !controlBlock.collision(-2,1,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -2;
+              controlBlock.Y += 1
+              drawGameField();
+            }else if(controlBlock.rot == 1 && !controlBlock.collision(2,1,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += 2;
+              controlBlock.Y += 1;
+              drawGameField();
+            }else if(controlBlock.rot == 3 && !controlBlock.collision(1,-2,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += 1;
+              controlBlock.Y += -2;
+              drawGameField();
+            }
+          } else if(new_rot === 3){
+            if(controlBlock.rot == 0 && !controlBlock.collision(-1,0,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -1;
+              drawGameField();
+            } else if(controlBlock.rot == 2 && !controlBlock.collision(2,0,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += 2;
+              drawGameField();
+            } else if(controlBlock.rot == 0 && !controlBlock.collision(2,0,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -2
+              drawGameField();
+            } else if(controlBlock.rot == 2 && !controlBlock.collision(-1,0,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -1;
+              drawGameField();
+            } else if(controlBlock.rot == 0 && !controlBlock.collision(-1,-2,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -1;
+              controlBlock.Y += -2;
+              drawGameField();
+            } else if(controlBlock.rot == 2 && !controlBlock.collision(2,-1,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += 2;
+              controlBlock.Y += -1;
+              drawGameField();
+            } else if(controlBlock.rot == 0 && !controlBlock.collision(2,1,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += 2;
+              controlBlock.Y += 1;
+              drawGameField();
+            } else if(controlBlock.rot == 2 && !controlBlock.collision(-1,2,sh)){
+              controlBlock.rot = new_rot;
+              controlBlock.X += -1;
+              controlBlock.Y += 2;
+              drawGameField();
+            }
+          }
+        }
+      } else {
+        if (!controlBlock.collision(rotateDirection, 0, sh)) {
+          controlBlock.rot = new_rot;
+          controlBlock.X += rotateDirection;
+          drawGameField();
+        } else if (!controlBlock.collision(-rotateDirection,0, sh)) {
+          controlBlock.rot = new_rot;
+          controlBlock.X += -rotateDirection
+          drawGameField();
+        } else if (!controlBlock.collision(2 * rotateDirection,0, sh)) {
+          controlBlock.rot = new_rot;
+          controlBlock.X += 2 * rotateDirection;
+          drawGameField();
+        } else if (!controlBlock.collision(-2 * rotateDirection, 0, sh)) {
+          controlBlock.X += -2 * rotateDirection;
+          controlBlock.rot = new_rot;
+          drawGameField();
+        }
       }
     }
   },
 
-  rotate2: () => {
-
-    const new_rot = (controlBlock.rot - 1) & 3;
-    const sh = controlBlock.shape.shapes[new_rot];
-    if (!controlBlock.collision(0,0 , sh)) {
-      controlBlock.rot = new_rot;
-      drawGameField();
-    } else {
-      if (!controlBlock.collision(-1,0, sh)) {
-        controlBlock.rot = new_rot;
-        controlBlock.X--;
-        drawGameField();
-      } else if (!controlBlock.collision(1,0, sh)) {
-        controlBlock.X++;
-        controlBlock.rot = new_rot;
-        drawGameField();
-      } else if (!controlBlock.collision(-2,0, sh)) {
-        controlBlock.X -= 2
-        controlBlock.rot = new_rot;
-        drawGameField();
-      } else if (!controlBlock.collision(2,0, sh)) {
-        controlBlock.X += 2
-        controlBlock.rot = new_rot;
-        drawGameField();
-      }
-    }
-
-  },
 
   // 落ちてくるテトリミノの影
   getShadowPos: () => {
@@ -516,7 +714,6 @@ const controlBlock: {
         (ghostPos[1] + block[1]) * blockSize,
         "rgba(250,250,250,0.1)",
         "rgba(250,250,250,0.2)"
-        
       );
     }
   }
@@ -675,7 +872,7 @@ document.addEventListener("keydown",(e) => {
   if (!gameEnd && !gamePaused) {
     if (equalKeyCode(props.keyBinds.rotateR, keycode)) {        // ↑
       e.preventDefault();
-      controlBlock.rotate();
+      controlBlock.rotate(1);
     } else if (equalKeyCode(props.keyBinds.left, keycode)) { // ←
       e.preventDefault();
       lKeyPressed = true;
@@ -702,7 +899,7 @@ document.addEventListener("keydown",(e) => {
     }
      else if (equalKeyCode(props.keyBinds.rotateL, keycode)) { // ↓
       e.preventDefault();
-      controlBlock.rotate2();
+      controlBlock.rotate(-1);
       
     }
   }
@@ -805,11 +1002,11 @@ const clickButtons = (buttonID: "drop" | "down" | "left" | "right" | "rotateR" |
         break;
       }
       case "rotateL":{
-        controlBlock.rotate2()
+        controlBlock.rotate(-1)
         break;
       }
       case 'rotateR':{
-        controlBlock.rotate()
+        controlBlock.rotate(1)
         break;
       }
     }

@@ -2,6 +2,9 @@
  * 落ちてくるテトリミノの形を定義
  */
 // テトリミノ
+
+import type { shapesData } from "./globalData";
+
 /*
 0:
 □■■
@@ -56,12 +59,7 @@
 □■
 
 */
-type shape = [number, number][];
-type shapes = [shape, shape, shape, shape];
-export const shapes: {
-    shapes: shapes;
-    color: string;
-}[] = [
+export const shapes: shapesData = [
     //  ■■
     // ■■
     {
@@ -155,6 +153,7 @@ export const shapes: {
             ],
         ],
         color: "#88b0e0",
+        rotateType: 1,
     },
 
     // ■■
@@ -310,6 +309,7 @@ export const shapes: {
             ],
         ],
         color: "#BB3025",
+        rotateType: 0,
     },
 
     // ■■■
@@ -337,6 +337,7 @@ export const shapes: {
             ],
         ],
         color: "#93F98B",
+        rotateType: 0,
     },
 
     // ■
@@ -486,6 +487,7 @@ export const shapes: {
             ],
         ],
         color: "#E65D32",
+        rotateType: 0,
     },
     // □□□■
     // ■■■■
@@ -633,6 +635,13 @@ export const shapes: {
     {
         shapes: [
             [
+                [1, 0],
+                [0, 0],
+                [-1, 0],
+                [0, -1],
+                [1, -1],
+            ],
+            [
                 [0, -1],
                 [0, 0],
                 [1, 0],
@@ -652,13 +661,6 @@ export const shapes: {
                 [0, 0],
                 [-1, 0],
                 [0, 1],
-            ],
-            [
-                [1, 0],
-                [0, 0],
-                [-1, 0],
-                [0, -1],
-                [1, -1],
             ],
         ],
         color: "#FFE699",
@@ -669,13 +671,6 @@ export const shapes: {
     {
         shapes: [
             [
-                [0, 1],
-                [0, 0],
-                [1, 0],
-                [0, -1],
-                [1, -1],
-            ],
-            [
                 [1, 0],
                 [0, 0],
                 [-1, 0],
@@ -695,6 +690,13 @@ export const shapes: {
                 [-1, 0],
                 [0, -1],
                 [-1, -1],
+            ],
+            [
+                [0, 1],
+                [0, 0],
+                [1, 0],
+                [0, -1],
+                [1, -1],
             ],
         ],
         color: "#CFDBBD",

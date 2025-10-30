@@ -18,6 +18,7 @@ const blockNumWidth = useTemplateRef("blockNumWidth")
 const nextNum = useTemplateRef("nextNum")
 const holdNum = useTemplateRef("holdNum")
 const randomType = useTemplateRef("randomType")
+const rotateSystem = useTemplateRef("rotateSystem")
 const shapeCount = [...Array(shapes.length)].map((_, i) => i)
 const shapeField = ref<HTMLCanvasElement[]>([])
 const setShapeFieldRef = (el: any) => {
@@ -39,7 +40,8 @@ const saveSettings = () => {
         holdNum: Number(holdNum.value?.value),
         randomType: randomType.value?.checked,
         startingShapes: Array.from(document.querySelectorAll<HTMLInputElement>(".startingShape")).filter(elem => elem.checked).map((elem) => Number(elem.dataset.shapeNumber)).toSorted(),
-        dropShapes: Array.from(document.querySelectorAll<HTMLInputElement>(".randomShape")).filter(elem => elem.checked).map((elem) => Number(elem.dataset.shapeNumber)).toSorted()
+        dropShapes: Array.from(document.querySelectorAll<HTMLInputElement>(".randomShape")).filter(elem => elem.checked).map((elem) => Number(elem.dataset.shapeNumber)).toSorted(),
+        rotateSystem: rotateSystem.value?.checked
     }))
 }
 
@@ -51,6 +53,7 @@ const resetSettings = () => {
     if(nextNum.value) nextNum.value.value = defaultSettings.nextNum.toString()
     if(holdNum.value) holdNum.value.value = defaultSettings.holdNum.toString()
     if(randomType.value) randomType.value.checked = defaultSettings.randomType;
+    if(rotateSystem.value) rotateSystem.value.checked = defaultSettings.rotateSystem;
     for(const elem of document.querySelectorAll<HTMLInputElement>(".startingShape")){
         elem.checked = defaultSettings.startingShapes.includes(Number(elem.dataset.shapeNumber))
     }
@@ -81,6 +84,10 @@ const resetSettings = () => {
             <li style="vertical-align: top">
                 <input ref="randomType" type="checkbox" id="randomType" :checked="settings.randomType">
                 <label for="randomType" style="display: inline-block;">ミノ抽選を完全ランダムにする</label>
+            </li>
+            <li style="vertical-align: top">
+                <input ref="rotateSystem" type="checkbox" id="rotateSystem" :checked="settings.rotateSystem">
+                <label for="rotateSystem" style="display: inline-block;">SRS回転を有効にする</label>
             </li>
             
 
