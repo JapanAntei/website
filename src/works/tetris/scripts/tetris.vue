@@ -406,39 +406,22 @@ const controlBlock: {
 
   // 落ちてくるテトリミノの影
   getShadowPos: () => {
-    const pos = controlBlock.position(controlBlock.X, controlBlock.Y);
-    let highestBlock = blockNumHeight - 1;
-    let lowestBlock = -2;
-    for (var i = 0; i < controlBlock.shape.shapes[controlBlock.pos].length; i++) {
-      for (var y = 0; y < fields.length; y++) {
-        if (fields[y][pos[i][0]] != fieldColor && y > pos[i][1]) {
-          if (y < highestBlock) {
-            highestBlock = y;
-          }
-        }
+
+    let lowestHeight = 0;
+    const centerX = Math.floor(controlBlock.X / blockSize)
+    const centerY = Math.floor(controlBlock.Y / blockSize)
+    collision: while (true){
+      for(const elem of controlBlock.shape.shapes[controlBlock.pos]){
+        if(
+          centerY + lowestHeight + elem[1] >= 0 &&
+      (
+          fields[centerY + lowestHeight + elem[1]][centerX + elem[0]] !== fieldColor)
+        ) break collision;
       }
-      if (controlBlock.shape.shapes[controlBlock.pos][i][1] > lowestBlock) {
-        lowestBlock = controlBlock.shape.shapes[controlBlock.pos][i][1];
-      }
+      lowestHeight++;
     }
 
-    highestBlock -= lowestBlock;
-    highestBlock += 1;
-    if (
-      controlBlock.collision(controlBlock.X, (highestBlock * blockSize)) ||
-      controlBlock.collision(controlBlock.X, ((highestBlock - 1) * blockSize))
-    ) {
-      highestBlock -= 1;
-    }
-    if (controlBlock.collision(controlBlock.X, (highestBlock * blockSize))) {
-      highestBlock -= 1;
-    }
-
-    let ghostY = highestBlock * blockSize;
-
-    if (ghostY < controlBlock.Y) {
-      ghostY = controlBlock.Y;
-    }
+    const ghostY = (lowestHeight + centerY - 1) * blockSize
     return [controlBlock.X, ghostY];
   },
 
@@ -464,8 +447,8 @@ const controlBlock: {
     } else {
       var pos = controlBlock.position(x, y);
     }
-    var collided = false;
-    for (var i = 0; i < pos.length; i++) {
+    let collided = false;
+    for (let i = 0; i < pos.length; i++) {
 
       if (pos[i][0] < 0 || pos[i][0] >= blockNumWidth) {
         collided = true;
