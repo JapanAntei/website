@@ -287,8 +287,6 @@ const controlBlock: {
   rotate: () => unknown
   rotate2: () => unknown
   collision: (x: number, y: number, s?: shape) => boolean,
-  position: (x: number, y: number) => number[][]
-  new_position: (shape: shape, x: number, y: number) => number[][]
   getShadowPos: () => number[]
   moveDown: () => unknown
   kill: () => unknown
@@ -304,7 +302,7 @@ const controlBlock: {
   shapeID: 0,
   color: "",
   X: 0,
-  Y: -blockSize,
+  Y: -1,
   rot: 0,
   reset: () => {
     if(dKeyPressed){
@@ -314,8 +312,8 @@ const controlBlock: {
     controlBlock.shapeID = nextShape[0]
     controlBlock.shape = shapes[controlBlock.shapeID]
     nextShape = nextShape.slice(1)
-    controlBlock.X = ((fieldWidth / 2) - ((fieldWidth / 2) % blockSize)) - blockSize;
-    controlBlock.Y = -blockSize
+    controlBlock.X = Math.floor(blockNumWidth / 2) - 1
+    controlBlock.Y = -1
     controlBlock.color = controlBlock.shape.color
     controlBlock.rot = 0
     blocksDropped.value += 1;
@@ -327,24 +325,24 @@ const controlBlock: {
   rotate: () => {
     const new_rot = (controlBlock.rot + 1) & 3;
     const sh = controlBlock.shape.shapes[new_rot];
-    if (!controlBlock.collision(controlBlock.X, controlBlock.Y, sh)) {
+    if (!controlBlock.collision(0, 0, sh)) {
       controlBlock.rot = new_rot;
       drawGameField();
     } else {
-      if (!controlBlock.collision(controlBlock.X + blockSize, controlBlock.Y, sh)) {
-        controlBlock.X += blockSize;
+      if (!controlBlock.collision(1, 0, sh)) {
         controlBlock.rot = new_rot;
+        controlBlock.X++;
         drawGameField();
-      } else if (!controlBlock.collision(controlBlock.X - blockSize, controlBlock.Y, sh)) {
-        controlBlock.X -= blockSize;
+      } else if (!controlBlock.collision(-1,0, sh)) {
         controlBlock.rot = new_rot;
+        controlBlock.X--;
         drawGameField();
-      } else if (!controlBlock.collision(controlBlock.X + (blockSize * 2), controlBlock.Y, sh)) {
-        controlBlock.X += blockSize * 2;
+      } else if (!controlBlock.collision(2,0, sh)) {
         controlBlock.rot = new_rot;
+        controlBlock.X +=2;
         drawGameField();
-      } else if (!controlBlock.collision(controlBlock.X - (blockSize * 2), controlBlock.Y, sh)) {
-        controlBlock.X -= blockSize * 2;
+      } else if (!controlBlock.collision(-2, 0, sh)) {
+        controlBlock.X -=2;
         controlBlock.rot = new_rot;
         drawGameField();
       }
@@ -355,137 +353,102 @@ const controlBlock: {
 
     const new_rot = (controlBlock.rot - 1) & 3;
     const sh = controlBlock.shape.shapes[new_rot];
-    if (!controlBlock.collision(controlBlock.X, controlBlock.Y, sh)) {
+    if (!controlBlock.collision(0,0 , sh)) {
       controlBlock.rot = new_rot;
       drawGameField();
     } else {
-      if (!controlBlock.collision(controlBlock.X - blockSize, controlBlock.Y, sh)) {
-        controlBlock.X -= blockSize;
+      if (!controlBlock.collision(-1,0, sh)) {
+        controlBlock.rot = new_rot;
+        controlBlock.X--;
+        drawGameField();
+      } else if (!controlBlock.collision(1,0, sh)) {
+        controlBlock.X++;
         controlBlock.rot = new_rot;
         drawGameField();
-      } else if (!controlBlock.collision(controlBlock.X + blockSize, controlBlock.Y, sh)) {
-        controlBlock.X += blockSize;
+      } else if (!controlBlock.collision(-2,0, sh)) {
+        controlBlock.X -= 2
         controlBlock.rot = new_rot;
         drawGameField();
-      } else if (!controlBlock.collision(controlBlock.X - (blockSize * 2), controlBlock.Y, sh)) {
-        controlBlock.X -= blockSize * 2;
-        controlBlock.rot = new_rot;
-        drawGameField();
-      } else if (!controlBlock.collision(controlBlock.X + (blockSize * 2), controlBlock.Y, sh)) {
-        controlBlock.X += blockSize * 2;
+      } else if (!controlBlock.collision(2,0, sh)) {
+        controlBlock.X += 2
         controlBlock.rot = new_rot;
         drawGameField();
       }
     }
 
-  },
-
-  // 位置
-  position: (x, y) => {
-    const arr = [];
-    const rotShape = controlBlock.shape.shapes[controlBlock.rot]
-    for (const zahyo of rotShape) {
-
-      const cx = Math.floor(((x + (zahyo[0] * blockSize)) / blockSize));
-      const cy = Math.floor(((y + (zahyo[1] * blockSize)) / blockSize));
-      arr.push([cx, cy]);
-    }
-    return arr;
-  },
-
-  // 新しい位置
-  new_position: (shape: shape, x: number, y: number) => {
-    const arr = [];
-    for (var i = 0; i < shape.length; i++) {
-      const cx = Math.floor(((x + (shape[i][0] * blockSize)) / blockSize));
-      const cy = Math.floor(((y + (shape[i][1] * blockSize)) / blockSize));
-      arr.push([cx, cy]);
-    }
-    return arr;
   },
 
   // 落ちてくるテトリミノの影
   getShadowPos: () => {
 
     let lowestHeight = 0;
-    const centerX = Math.floor(controlBlock.X / blockSize)
-    const centerY = Math.floor(controlBlock.Y / blockSize)
     collision: while (true){
       for(const elem of controlBlock.shape.shapes[controlBlock.rot]){
         if(
-          centerY + lowestHeight + elem[1] >= 0 &&
+          controlBlock.Y + lowestHeight + elem[1] >= 0 &&
       (
-          fields[centerY + lowestHeight + elem[1]][centerX + elem[0]] !== fieldColor)
+          fields[controlBlock.Y + lowestHeight + elem[1]][controlBlock.X + elem[0]] !== fieldColor)
         ) break collision;
       }
       lowestHeight++;
     }
 
-    const ghostY = (lowestHeight + centerY - 1) * blockSize
+    const ghostY = lowestHeight + controlBlock.Y - 1
     return [controlBlock.X, ghostY];
   },
 
   // テトリミノダウン処理
   moveDown: () => {
-    controlBlock.Y += blockSize;
-    for (var i = 0; i < controlBlock.shape.shapes[controlBlock.rot].length; i++) {
-      const cx = Math.floor(((controlBlock.X + (controlBlock.shape.shapes[controlBlock.rot][i][0] * blockSize)) / blockSize));
-      const cy = Math.floor(((controlBlock.Y + (controlBlock.shape.shapes[controlBlock.rot][i][1] * blockSize)) / blockSize));
-      if (cx > -1 && cy > -1) {
-        if (fields[cy][cx] != fieldColor || cy == blockNumHeight) {
-          controlBlock.kill();
-        }
+    for(const block of controlBlock.shape.shapes[controlBlock.rot]){
+      const cx = controlBlock.X + block[0]
+      const cy = controlBlock.Y + block[1] + 1
+      if (cx > -1 && cy > -1 && (fields[cy][cx] != fieldColor || cy == blockNumHeight)) {
+        controlBlock.kill();
+        drawGameField();
+        return
       }
     }
+    controlBlock.Y++;
     drawGameField();
   },
 
   // テトリミノ衝突チェック
-  collision: (x: number, y: number, s?: shape) => {
-    if (s != undefined) {
-      var pos = controlBlock.new_position(s, x, y);
-    } else {
-      var pos = controlBlock.position(x, y);
-    }
-    let collided = false;
-    for (let i = 0; i < pos.length; i++) {
-
-      if (pos[i][0] < 0 || pos[i][0] >= blockNumWidth) {
-        collided = true;
-        break;
-      } else if (pos[i][1] != undefined && pos[i][1] >= 0 && fields[pos[i][1]][pos[i][0]] != fieldColor) {
-        collided = true;
-        break;
+  collision: (dx: number, dy: number, s?: shape) => {
+    for(const block of s ?? controlBlock.shape.shapes[controlBlock.rot]){
+      const cx = controlBlock.X + dx + block[0]
+      const cy = controlBlock.Y + dy + block[1]
+      if(cx < 0 || blockNumWidth <= cx){
+        return true
+      } else if (cy >= 0 && fields[cy][cx] !== fieldColor){
+        return true;
       }
     }
-    return collided;
+    return false;
   },
 
   // 左移動
   moveLeft: () => {
-    if (!controlBlock.collision(controlBlock.X - blockSize, controlBlock.Y)) {
-      controlBlock.X = controlBlock.X - blockSize;
+    if (!controlBlock.collision(-1, 0)) {
+      controlBlock.X--;
       drawGameField();
     }
   },
 
   // 右移動
   moveRight: () => {
-    if (!controlBlock.collision(controlBlock.X + blockSize, controlBlock.Y)) {
-      if (controlBlock.X < (fieldWidth - blockSize)) {
-        controlBlock.X += blockSize;
-        drawGameField();
-      }
+    if (!controlBlock.collision( 1, 0)) {
+      controlBlock.X++;
+      drawGameField();
     }
   },
 
   // 下まで落下
   dropDown: () => {
     const ghostPos = controlBlock.getShadowPos();
-    const pos = controlBlock.position(ghostPos[0], ghostPos[1]);
-    for (var i = 0; i < controlBlock.shape.shapes[controlBlock.rot].length; i++) {
-      if (fields[pos[i][1]] != undefined)
-        fields[pos[i][1]][pos[i][0]] = controlBlock.color;
+    for(const block of controlBlock.shape.shapes[controlBlock.rot]){
+
+      if (fields[ghostPos[1] + block[1]] != undefined)
+        fields[ghostPos[1] + block[1]][ghostPos[0] + block[0]] = controlBlock.color;
     }
     controlBlock.reset();
     removeLines();
@@ -494,34 +457,19 @@ const controlBlock: {
 
   // 終了処理
   kill: () => {
-    const curX = controlBlock.X;
-    const curY = controlBlock.Y - blockSize;
-    const pos = controlBlock.position(curX, curY);
-    if (pos[0][1] < 0) {
+    if (controlBlock.Y < 1) {
       gameEnd = true;
     }
-    for (let i = 0; i < controlBlock.shape.shapes[controlBlock.rot].length; i++) {
-      const kx = pos[i][0];
-      const ky = pos[i][1];
-      if (kx > -1 && ky > -1) {
-        fields[ky][kx] = controlBlock.color;
-      }
+    for (const block of controlBlock.shape.shapes[controlBlock.rot]){
+      const kx = controlBlock.X + block[0];
+      const ky = controlBlock.Y + block[1];
+      if(kx > -1 && ky > -1) fields[ky][kx] = controlBlock.color;
     }
     controlBlock.reset();
   },
 
   hold: function (key: number) {
     if (!held[key]) {
-      const curX = controlBlock.X;
-      const curY = controlBlock.Y;
-      const pos = controlBlock.position(curX, curY);
-      for (let i = 0; i < controlBlock.shape.shapes[controlBlock.rot].length; i++) {
-        const kx = pos[i][0];
-        const ky = pos[i][1];
-        if (kx > -1 && ky > -1) {
-          fields[ky][kx] = fieldColor;
-        }
-      }
 
       if (holdShapes[key] != -1) {
         [holdShapes[key], controlBlock.shapeID] = [controlBlock.shapeID, holdShapes[key]]
@@ -530,19 +478,16 @@ const controlBlock: {
         [holdShapes[key], controlBlock.shapeID] = [controlBlock.shapeID, nextShape[0]]
         controlBlock.shape = shapes[controlBlock.shapeID]
         nextShape = nextShape.slice(1)
-        console.log("a",nextShape)
         randomBlocks();
-        console.log("a",nextShape)
         drawNext(nextFields.value, nextShape, (n) => n == 0 ? 1 : 0.5);
       }
       drawNext(holdFields.value, holdShapes)
 
       controlBlock.color = controlBlock.shape.color;
       controlBlock.rot = 0;
-      controlBlock.X = ((fieldWidth / 2) - ((fieldWidth / 2) % blockSize)) - blockSize;
-      controlBlock.Y = -blockSize;
+      controlBlock.X = Math.floor(blockNumWidth / 2) - 1
+      controlBlock.Y = -1
       held[key] = true
-      //document.querySelector(`[keyboard="${key}"]`).classList.add("held")
       drawGameField();
     }
   },
@@ -550,11 +495,11 @@ const controlBlock: {
 
   // テトリミノ描画
   draw: () => {
-    for (var i = 0; i < controlBlock.shape.shapes[controlBlock.rot].length; i++) {
+    for(const block of controlBlock.shape.shapes[controlBlock.rot]){
       genStrokedBlock(
         tfield.value!,
-        (controlBlock.X + (controlBlock.shape.shapes[controlBlock.rot][i][0] * blockSize)),
-        (controlBlock.Y + (controlBlock.shape.shapes[controlBlock.rot][i][1] * blockSize)), 
+        (controlBlock.X + block[0]) * blockSize,
+        (controlBlock.Y + block[1]) * blockSize,
         controlBlock.color,
         fieldColor
       );
@@ -564,11 +509,11 @@ const controlBlock: {
   // テトリミノ影描画
   drawShadow: () => {
     const ghostPos = controlBlock.getShadowPos();
-    for (var i = 0; i < controlBlock.shape.shapes[controlBlock.rot].length; i++) {
+    for(const block of controlBlock.shape.shapes[controlBlock.rot]){
       genStrokedBlock(
         tfield.value!,
-        (ghostPos[0] + (controlBlock.shape.shapes[controlBlock.rot][i][0] * blockSize)),
-        (ghostPos[1] + (controlBlock.shape.shapes[controlBlock.rot][i][1] * blockSize)),
+        (ghostPos[0] + block[0]) * blockSize,
+        (ghostPos[1] + block[1]) * blockSize,
         "rgba(250,250,250,0.1)",
         "rgba(250,250,250,0.2)"
         
