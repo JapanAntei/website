@@ -1,10 +1,8 @@
 export type shape = [number, number][];
 export type shapeData = {
-    rot0: shape;
-    rot1: shape;
-    rot2: shape;
-    rot3: shape;
+    shapes: [shape, shape, shape, shape];
     color: string;
+    rotateType?: number;
 };
 export type shapesData = shapeData[];
 
@@ -19,6 +17,7 @@ interface TetrisSettings {
     startingShapes: number[];
     dropShapes: number[];
     randomType: boolean;
+    rotateSystem: boolean;
 }
 export const defaultSettings: TetrisSettings = {
     blockSize: 20,
@@ -30,6 +29,7 @@ export const defaultSettings: TetrisSettings = {
     startingShapes: [2, 3, 5, 6],
     dropShapes: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13/* ,14, 15, 16,17,18*/],
     randomType:true,
+    rotateSystem: false
 };
 
 export let fieldColor = "#202020"; // フィールド背景色
@@ -53,6 +53,8 @@ export let startingShapes = defaultSettings["startingShapes"]
 export let dropShapes = defaultSettings["dropShapes"]
 export let randomType = defaultSettings["randomType"]; // 横ブロック数
 
+export let rotateSystem = defaultSettings["rotateSystem"]
+
 export function getSettingObj(storageName?: string): TetrisSettings{
     localStorageSettings = null
     blockSize = Number(getSetting("blockSize", storageName))
@@ -64,6 +66,7 @@ export function getSettingObj(storageName?: string): TetrisSettings{
     startingShapes = getSetting("startingShapes", storageName)
     dropShapes = getSetting("dropShapes", storageName)
     randomType = getSetting("randomType", storageName)
+    rotateSystem = Boolean(getSetting("rotateSystem", storageName))
 
     fieldWidth = blockNumWidth * blockSize; // フィールド幅
     fieldHeight = blockNumHeight * blockSize; // フィールド高さ
@@ -78,7 +81,8 @@ export function getSettingObj(storageName?: string): TetrisSettings{
         DLEffect,
         startingShapes,
         dropShapes,
-        randomType
+        randomType,
+        rotateSystem
     }
 }
 

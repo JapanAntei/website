@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { useTemplateRef } from 'vue';
-import { defaultSettings, getSettingObj } from '../scripts/globalData';
+import { ref, useTemplateRef } from 'vue';
+import { bigBlockBox, defaultSettings, getSettingObj } from '../scripts/globalData';
+import { drawNext } from '../scripts/canvasController';
+import { shapes } from '../scripts/shapes';
 
 
 const props = defineProps({
@@ -16,6 +18,18 @@ const blockNumWidth = useTemplateRef("blockNumWidth")
 const nextNum = useTemplateRef("nextNum")
 const holdNum = useTemplateRef("holdNum")
 const randomType = useTemplateRef("randomType")
+const rotateSystem = useTemplateRef("rotateSystem")
+const shapeCount = [...Array(shapes.length)].map((_, i) => i)
+const shapeField = ref<HTMLCanvasElement[]>([])
+const setShapeFieldRef = (el: any) => {
+  if (el) {
+    shapeField.value.push(el)
+    el.width = bigBlockBox
+    el.height = bigBlockBox
+        drawNext(shapeField.value, shapeCount, () => 1)
+  }
+}
+
 
 const saveSettings = () => {
     localStorage.setItem(props.setttingId ?? "GoMeTetrisSettings", JSON.stringify({
@@ -24,7 +38,10 @@ const saveSettings = () => {
         blockNumWidth: Number(blockNumWidth.value?.value),
         nextNum: Number(nextNum.value?.value),
         holdNum: Number(holdNum.value?.value),
-        randomType: randomType.value?.checked
+        randomType: randomType.value?.checked,
+        startingShapes: Array.from(document.querySelectorAll<HTMLInputElement>(".startingShape")).filter(elem => elem.checked).map((elem) => Number(elem.dataset.shapeNumber)).toSorted(),
+        dropShapes: Array.from(document.querySelectorAll<HTMLInputElement>(".randomShape")).filter(elem => elem.checked).map((elem) => Number(elem.dataset.shapeNumber)).toSorted(),
+        rotateSystem: rotateSystem.value?.checked
     }))
 }
 
@@ -36,6 +53,13 @@ const resetSettings = () => {
     if(nextNum.value) nextNum.value.value = defaultSettings.nextNum.toString()
     if(holdNum.value) holdNum.value.value = defaultSettings.holdNum.toString()
     if(randomType.value) randomType.value.checked = defaultSettings.randomType;
+    if(rotateSystem.value) rotateSystem.value.checked = defaultSettings.rotateSystem;
+    for(const elem of document.querySelectorAll<HTMLInputElement>(".startingShape")){
+        elem.checked = defaultSettings.startingShapes.includes(Number(elem.dataset.shapeNumber))
+    }
+    for(const elem of document.querySelectorAll<HTMLInputElement>(".randomShape")){
+        elem.checked = defaultSettings.dropShapes.includes(Number(elem.dataset.shapeNumber))
+    }
 }
 
 </script>
@@ -61,6 +85,11 @@ const resetSettings = () => {
                 <input ref="randomType" type="checkbox" id="randomType" :checked="settings.randomType">
                 <label for="randomType" style="display: inline-block;">ミノ抽選を完全ランダムにする</label>
             </li>
+            <li style="vertical-align: top">
+                <input ref="rotateSystem" type="checkbox" id="rotateSystem" :checked="settings.rotateSystem">
+                <label for="rotateSystem" style="display: inline-block;">SRS回転を有効にする</label>
+            </li>
+            
 
         </ul>
         <h3>画面表示について</h3>
@@ -75,8 +104,24 @@ const resetSettings = () => {
             </li>
 
         </ul>
-            <button @click="saveSettings">設定を保存する</button>
-            <button @click="resetSettings">設定をリセットする</button>
+        <h3>ミノの種類</h3>
+        <div id="nextField">
+          <div v-for="i in shapes.length" :key="`next${i-1}`" class="shapesSettingBox">
+            <canvas class="holdCanvas" :ref="setShapeFieldRef"></canvas>
+            <div style="text-align: left; margin-left: 10px;">
+            <div style="vertical-align: top">
+                <input type="checkbox" class="startingShape" :id="`startingShape${i-1}`" :data-shape-number="i-1" :checked="settings.startingShapes.includes(i-1)">
+                <label :for="`startingShape${i-1}`" style="display: inline-block;">最初のミノ抽選の候補に入れる</label>
+            </div>
+            <div style="vertical-align: top">
+                <input type="checkbox" class="randomShape" :id="`randomShape${i-1}`" :data-shape-number="i-1" :checked="settings.dropShapes.includes(i-1)">
+                <label :for="`randomShape${i-1}`" style="display: inline-block;">ミノ抽選候補に入れる</label>
+            </div>
+            </div>
+          </div>
+        </div>
+        <button @click="saveSettings">設定を保存する</button>
+        <button @click="resetSettings">設定をリセットする</button>
     </details>
 </template>
 
@@ -91,5 +136,12 @@ input[type="number"]{
 }
 li{
     list-style-position: inside
+}
+
+.shapesSettingBox{
+    display: flex;
+    place-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
 }
 </style>
