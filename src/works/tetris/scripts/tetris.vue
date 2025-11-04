@@ -332,225 +332,74 @@ const controlBlock: {
       drawGameField();
     } else {
       if(rotateSystem){
+
+        const rotating = (X: number, Y: number): boolean => {
+          if(controlBlock.collision(X,Y,sh)){
+            return false;
+          } else {
+            controlBlock.rot = new_rot;
+            controlBlock.X += X;
+            controlBlock.Y += Y;
+            drawGameField();
+            return true
+          }
+        }
+
         if(controlBlock.rotateType === 0){
           if(new_rot === 0){
-            if(!controlBlock.collision(-rotateDirection,0,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -rotateDirection;
-              drawGameField();
-            } else if(!controlBlock.collision(-rotateDirection,1,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -rotateDirection;
-              controlBlock.Y += 1;
-              drawGameField();
-            }else if(!controlBlock.collision(0,-2,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.Y += -2;
-              drawGameField();
-            }else if(!controlBlock.collision(-rotateDirection,-2,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -rotateDirection;
-              controlBlock.Y += -2;
-              drawGameField();
-            }
+            if(rotating(-rotateDirection, 0)) {}
+            else if (rotating(-rotateDirection, 1)) {}
+            else if (rotating(0, -2)) {}
+            else if (rotating(-rotateDirection, -2)) {}
           } else if(new_rot === 1){
-            if(!controlBlock.collision(-1,0,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -1;
-              drawGameField();
-            } else if(!controlBlock.collision(-1,-1,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -1;
-              controlBlock.Y += -1;
-              drawGameField();
-            }else if(!controlBlock.collision(0,2,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.Y += 2;
-              drawGameField();
-            }else if(!controlBlock.collision(-1,2,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -1;
-              controlBlock.Y += 2;
-              drawGameField();
-            }
+            if(rotating(-1, 0)) {}
+            else if (rotating(-1, -1)) {}
+            else if (rotating(0, 2)) {}
+            else if (rotating(-1, 2)) {}
           } else if(new_rot === 2){
-            if(!controlBlock.collision(-rotateDirection,0,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -rotateDirection;
-              drawGameField();
-            } else if(!controlBlock.collision(-rotateDirection,-1,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -rotateDirection;
-              controlBlock.Y += -1;
-              drawGameField();
-            }else if(!controlBlock.collision(0,-2,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.Y += -2;
-              drawGameField();
-            }else if(!controlBlock.collision(-rotateDirection,-2,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -rotateDirection;
-              controlBlock.Y += -2;
-              drawGameField();
-            }
+            if(rotating(-rotateDirection, 0)) {}
+            else if (rotating(-rotateDirection, -1)) {}
+            else if (rotating(0, -2)) {}
+            else if (rotating(-1, -2)) {}
           } else if(new_rot === 3){
-            if(!controlBlock.collision(1,0,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += 1;
-              drawGameField();
-            } else if(!controlBlock.collision(1,-1,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += 1;
-              controlBlock.Y += -1;
-              drawGameField();
-            }else if(!controlBlock.collision(0,2,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.Y += 2;
-              drawGameField();
-            }else if(!controlBlock.collision(1,2,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += 1;
-              controlBlock.Y += 2;
-              drawGameField();
-            }
+            if(rotating(1, 0)) {}
+            else if (rotating(1, -1)) {}
+            else if (rotating(0, 2)) {}
+            else if (rotating(1, 2)) {}
           }
         } else if(controlBlock.rotateType === 1){
           if(new_rot === 0){
-            if(!controlBlock.collision(-2 * rotateDirection,0,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -2 * rotateDirection;
-              drawGameField();
-            } else if(!controlBlock.collision(rotateDirection,0,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += rotateDirection;
-              drawGameField();
-            }else if(controlBlock.rot == 1 && !controlBlock.collision(2,-1,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += 2;
-              controlBlock.Y += -1
-              drawGameField();
-            }else if(controlBlock.rot == 3 && !controlBlock.collision(1,2,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += 1;
-              controlBlock.Y += 2
-              drawGameField();
-            }else if(controlBlock.rot == 1 && !controlBlock.collision(-1,2,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -1;
-              controlBlock.Y += 2;
-              drawGameField();
-            }else if(controlBlock.rot == 3 && !controlBlock.collision(-2,-1,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -2;
-              controlBlock.Y += -1;
-              drawGameField();
-            }
+            if(rotating(-2 * rotateDirection,0)){}
+            else if(rotating(rotateDirection,0)){}
+            else if(controlBlock.rot == 1 && rotating(2,-1)){}
+            else if(controlBlock.rot == 3 && rotating(1,2)){}
+            else if(controlBlock.rot == 1 && rotating(-1,2)){}
+            else if(controlBlock.rot == 3 && rotating(-2,-1)){}
           } else if(new_rot === 1){
-            if(controlBlock.rot == 0 && !controlBlock.collision(-2,0,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -2;
-              drawGameField();
-            } else if(controlBlock.rot == 2 && !controlBlock.collision(1,0,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += 1;
-              drawGameField();
-            } else if(controlBlock.rot == 0 && !controlBlock.collision(1,0,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -2;
-              drawGameField();
-            } else if(controlBlock.rot == 2 && !controlBlock.collision(-2,0,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += 1;
-              drawGameField();
-            } else if(controlBlock.rot == 0 && !controlBlock.collision(-2,1,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -2;
-              controlBlock.Y += 1;
-              drawGameField();
-            } else if(controlBlock.rot == 2 && !controlBlock.collision(1,2,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += 1;
-              controlBlock.Y += 2;
-              drawGameField();
-            } else if(controlBlock.rot == 0 && !controlBlock.collision(1,-2,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += 1;
-              controlBlock.Y += -2;
-              drawGameField();
-            } else if(controlBlock.rot == 2 && !controlBlock.collision(-2,-1,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -2;
-              controlBlock.Y += -1;
-              drawGameField();
-            }
+            if(controlBlock.rot == 0 && rotating(-2,0)){}
+            else if(controlBlock.rot == 2 && rotating(1,0)){}
+            else if(controlBlock.rot == 0 && rotating(1,0)){}
+            else if(controlBlock.rot == 2 && rotating(-2,0)){}
+            else if(controlBlock.rot == 0 && rotating(-2,1)){}
+            else if(controlBlock.rot == 2 && rotating(1,2)){}
+            else if(controlBlock.rot == 0 && rotating(1,-2)){}
+            else if(controlBlock.rot == 2 && rotating(-2,-1)){}
           } else if(new_rot === 2){
-            if(!controlBlock.collision(-rotateDirection,0,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -rotateDirection;
-              drawGameField();
-            } else if(!controlBlock.collision(2 * rotateDirection,0,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += 2 * rotateDirection;
-              drawGameField();
-            }else if(controlBlock.rot == 1 && !controlBlock.collision(-1,-2,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -1;
-              controlBlock.Y += -2
-              drawGameField();
-            }else if(controlBlock.rot == 3 && !controlBlock.collision(-2,1,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -2;
-              controlBlock.Y += 1
-              drawGameField();
-            }else if(controlBlock.rot == 1 && !controlBlock.collision(2,1,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += 2;
-              controlBlock.Y += 1;
-              drawGameField();
-            }else if(controlBlock.rot == 3 && !controlBlock.collision(1,-2,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += 1;
-              controlBlock.Y += -2;
-              drawGameField();
-            }
+            if(rotating(-rotateDirection,0)){}
+            else if(rotating(2 * rotateDirection,0)){}
+            else if(controlBlock.rot == 1 && rotating(-1,-2)){}
+            else if(controlBlock.rot == 3 && rotating(-2,1)){}
+            else if(controlBlock.rot == 1 && rotating(2,1)){}
+            else if(controlBlock.rot == 3 && rotating(1,-2)){}
           } else if(new_rot === 3){
-            if(controlBlock.rot == 0 && !controlBlock.collision(-1,0,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -1;
-              drawGameField();
-            } else if(controlBlock.rot == 2 && !controlBlock.collision(2,0,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += 2;
-              drawGameField();
-            } else if(controlBlock.rot == 0 && !controlBlock.collision(2,0,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -2
-              drawGameField();
-            } else if(controlBlock.rot == 2 && !controlBlock.collision(-1,0,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -1;
-              drawGameField();
-            } else if(controlBlock.rot == 0 && !controlBlock.collision(-1,-2,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -1;
-              controlBlock.Y += -2;
-              drawGameField();
-            } else if(controlBlock.rot == 2 && !controlBlock.collision(2,-1,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += 2;
-              controlBlock.Y += -1;
-              drawGameField();
-            } else if(controlBlock.rot == 0 && !controlBlock.collision(2,1,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += 2;
-              controlBlock.Y += 1;
-              drawGameField();
-            } else if(controlBlock.rot == 2 && !controlBlock.collision(-1,2,sh)){
-              controlBlock.rot = new_rot;
-              controlBlock.X += -1;
-              controlBlock.Y += 2;
-              drawGameField();
-            }
+            if(controlBlock.rot == 0 && rotating(-1,0)){}
+            else if(controlBlock.rot == 2 && rotating(2,0)){}
+            else if(controlBlock.rot == 0 && rotating(2,0)){}
+            else if(controlBlock.rot == 2 && rotating(-1,0)){}
+            else if(controlBlock.rot == 0 && rotating(-1,-2)){}
+            else if(controlBlock.rot == 2 && rotating(2,-1)){}
+            else if(controlBlock.rot == 0 && rotating(2,1)){}
+            else if(controlBlock.rot == 2 && rotating(-1,2)){}
           }
         }
       } else {
