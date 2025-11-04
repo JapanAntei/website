@@ -19,6 +19,7 @@ const nextNum = useTemplateRef("nextNum")
 const holdNum = useTemplateRef("holdNum")
 const randomType = useTemplateRef("randomType")
 const rotateSystem = useTemplateRef("rotateSystem")
+const DLEffect = useTemplateRef("DLEffect")
 const shapeCount = [...Array(shapes.length)].map((_, i) => i)
 const shapeField = ref<HTMLCanvasElement[]>([])
 const setShapeFieldRef = (el: any) => {
@@ -41,7 +42,8 @@ const saveSettings = () => {
         randomType: randomType.value?.checked,
         startingShapes: Array.from(document.querySelectorAll<HTMLInputElement>(".startingShape")).filter(elem => elem.checked).map((elem) => Number(elem.dataset.shapeNumber)).toSorted(),
         dropShapes: Array.from(document.querySelectorAll<HTMLInputElement>(".randomShape")).filter(elem => elem.checked).map((elem) => Number(elem.dataset.shapeNumber)).toSorted(),
-        rotateSystem: rotateSystem.value?.checked
+        rotateSystem: rotateSystem.value?.checked,
+        DLEffect: DLEffect.value?.checked,
     }))
 }
 
@@ -54,6 +56,7 @@ const resetSettings = () => {
     if(holdNum.value) holdNum.value.value = defaultSettings.holdNum.toString()
     if(randomType.value) randomType.value.checked = defaultSettings.randomType;
     if(rotateSystem.value) rotateSystem.value.checked = defaultSettings.rotateSystem;
+    if(DLEffect.value) DLEffect.value.checked = defaultSettings.DLEffect;
     for(const elem of document.querySelectorAll<HTMLInputElement>(".startingShape")){
         elem.checked = defaultSettings.startingShapes.includes(Number(elem.dataset.shapeNumber))
     }
@@ -101,6 +104,10 @@ const resetSettings = () => {
             <li>
                 <label for="holdNum">ホールドの数</label>
                 <input ref="holdNum" type="number" id="holdNum" min="1" :value="settings.holdNum" />
+            </li>
+            <li style="vertical-align: top">
+                <input ref="DLEffect" type="checkbox" id="DLEffect" :checked="settings.DLEffect">
+                <label for="DLEffect" style="display: inline-block;">ライン消去時にアニメーションをする</label>
             </li>
 
         </ul>

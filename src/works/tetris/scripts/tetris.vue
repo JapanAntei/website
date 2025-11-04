@@ -600,8 +600,8 @@ const removeLinesEffect = function (removeLines: number[]) {
     fields = tempFields.filter((_, index) => {
       return !removeLines.includes(index)
     })
-    while (fields.length < fieldHeight) {
-      fields.push(emptyLine.slice())
+    while (fields.length <= blockNumHeight) {
+      fields.unshift(emptyLine.slice())
     }
   }
 }
