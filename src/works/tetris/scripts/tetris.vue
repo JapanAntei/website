@@ -138,6 +138,8 @@ let linesRemoved = ref(0);
 let blocksDropped = ref(0);
 let fourLineRmoved = ref(0);
 
+let srsMultiply = 1;
+
 
 
 /*
@@ -319,6 +321,7 @@ const controlBlock: {
     controlBlock.rot = 0
     controlBlock.rotateType = controlBlock.shape.rotateType ?? 0;
     blocksDropped.value += 1;
+    srsMultiply = 1;
     randomBlocks()
     held = held.map(_ => false)
     drawNext(nextFields.value, nextShape, (n) => n == 0 ? 1 : 0.5)
@@ -340,6 +343,7 @@ const controlBlock: {
             controlBlock.rot = new_rot;
             controlBlock.X += X;
             controlBlock.Y += Y;
+            srsMultiply++;
             drawGameField();
             return true
           }
@@ -456,6 +460,7 @@ const controlBlock: {
       }
     }
     controlBlock.Y++;
+    srsMultiply = 0;
     drawGameField();
   },
 
@@ -534,6 +539,7 @@ const controlBlock: {
       controlBlock.rot = 0;
       controlBlock.X = Math.floor(blockNumWidth / 2) - 1
       controlBlock.Y = -1
+      srsMultiply = 1;
       held[key] = true
       drawGameField();
     }
@@ -623,7 +629,7 @@ const removeLines = function () {
     }
 
     // 点数評価
-    const multiplier = 25 * (deleteLines.length ** 2);
+    const multiplier = 25 * (deleteLines.length ** 2) * srsMultiply;
     score.value += (multiplier * (level.value + 1));
     removeLinesEffect(deleteLines)
   }
