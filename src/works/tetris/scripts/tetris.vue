@@ -902,53 +902,54 @@ const loopGame = function () {
 
 <template>
   <div>
-  <div id="gameArea" :class="{'fieldReverse': !props.left}">
+    <div id="gameArea" :class="{'fieldReverse': !props.left}">
 
-    <div id="holdField">
-      <div v-for="i in holdNum" :key="`hold${i}`">
-        <div class="title">ホールド {{ i }}</div>
-        <canvas class="holdCanvas" :ref="setHoldFieldsRef"></canvas><br>
-        <button @click="holdButtonClick(i - 1)" class="holdButton">ホールド</button>
+      <div id="holdField">
+        <div v-for="i in holdNum" :key="`hold${i}`">
+          <div class="title">ホールド {{ i }}</div>
+          <canvas class="holdCanvas" :ref="setHoldFieldsRef"></canvas><br>
+          <button @click="holdButtonClick(i - 1)" class="holdButton">ホールド</button>
+        </div>
       </div>
-    </div>
-    <div id="gameField">
-      <canvas id="gameCanvas" ref="tfield"></canvas>
-    </div>
-    <div id="nextField">
-      <div v-for="i in nextNum" :key="`next${i}`">
-        <div class="title" v-if="i == 1">次のブロック</div>
-        <canvas class="holdCanvas" :ref="setNextFieldsRef"></canvas>
+      <div id="gameField">
+        <canvas id="gameCanvas" ref="tfield"></canvas>
       </div>
+      <div id="nextField">
+        <div v-for="i in nextNum" :key="`next${i}`">
+          <div class="title" v-if="i == 1">次のブロック</div>
+          <canvas class="holdCanvas" :ref="setNextFieldsRef"></canvas>
+        </div>
+      </div>
+
     </div>
+    
+    <div id="buttonArea">
 
-  </div>
-  <div id="scoreBoard" :class="{'leftBoard':props.left}">
-    <ul>
-      <li>レベル <div>{{ level }}</div>
-      </li>
-      <li>累計ブロック数 <div>{{ blocksDropped }}</div>
-      </li>
-      <li>ライン <div>{{ linesRemoved }}</div>
-      </li>
-      <li>4ライン消し <div>{{ fourLineRmoved }}</div>
-      </li>
-      <li>点数 <div>{{ score }}</div>
-      </li>
-    </ul>
-  </div>
-  <div id="buttonArea">
+      <button @click="clickButtons('rotateL')" class="controlButton rotateButton">↪</button>
+      <button @click="clickButtons('drop')" @touchstart="(e) => touchStart(e, 'drop')" @touchend="touchEnd('drop')" class="controlButton moveButton">⇓</button>
+      <button @click="clickButtons('rotateR')" class="controlButton rotateButton">↩</button>
+      <br>
+      <button @click="clickButtons('left')" @touchstart="(e) => touchStart(e, 'left')" @touchend="() => touchEnd('left')" class="controlButton moveButton">←</button>
+      <button @click="clickButtons('down')" @touchstart="(e) => touchStart(e, 'down')" @touchend="touchEnd('down')" class="controlButton moveButton">↓</button>
+      <button @click="clickButtons('right')" @touchstart="(e) => touchStart(e, 'right')" @touchend="() => touchEnd('right')" class="controlButton moveButton">→</button><br><br>
 
-    <button @click="clickButtons('rotateL')" class="controlButton rotateButton">↪</button>
-    <button @click="clickButtons('drop')" @touchstart="(e) => touchStart(e, 'drop')" @touchend="touchEnd('drop')" class="controlButton moveButton">⇓</button>
-    <button @click="clickButtons('rotateR')" class="controlButton rotateButton">↩</button>
-    <br>
-    <button @click="clickButtons('left')" @touchstart="(e) => touchStart(e, 'left')" @touchend="() => touchEnd('left')" class="controlButton moveButton">←</button>
-    <button @click="clickButtons('down')" @touchstart="(e) => touchStart(e, 'down')" @touchend="touchEnd('down')" class="controlButton moveButton">↓</button>
-    <button @click="clickButtons('right')" @touchstart="(e) => touchStart(e, 'right')" @touchend="() => touchEnd('right')" class="controlButton moveButton">→</button><br><br>
-
-    <button @click="pauseControl" @touchstart="pauseControl" class="longButton" id="pauseButton">ポーズする</button><br>
-    <button @click="confirmResetGame" @touchstart="confirmResetGame" class="longButton" id="resetButton">ゲームをリセットする</button><br>
-  </div>
+      <button @click="pauseControl" @touchstart="pauseControl" class="longButton" id="pauseButton">ポーズする</button><br>
+      <button @click="confirmResetGame" @touchstart="confirmResetGame" class="longButton" id="resetButton">ゲームをリセットする</button><br>
+    </div>
+    <div id="scoreBoard" :class="{'leftBoard':props.left}">
+      <ul>
+        <li>レベル <div>{{ level }}</div>
+        </li>
+        <li>累計ブロック数 <div>{{ blocksDropped }}</div>
+        </li>
+        <li>ライン <div>{{ linesRemoved }}</div>
+        </li>
+        <li>4ライン消し <div>{{ fourLineRmoved }}</div>
+        </li>
+        <li>点数 <div>{{ score }}</div>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
@@ -1054,21 +1055,29 @@ li {
   list-style: none;
 }
 
+@media screen and (width > 640px) {
+  
+  #scoreBoard {
+    position: absolute;
+    top: 400px;
+    background-color: antiquewhite;
+    border-radius: 15px;
+    z-index: 3;
+  }
+
+  #scoreBoard.leftBoard{
+    left:50px;
+  }
+  #scoreBoard:not(.leftBoard){
+    right: 50px;
+  }
+}
+
 #scoreBoard {
-  position: absolute;
-  top: 400px;
   background-color: antiquewhite;
   border-radius: 15px;
   z-index: 3;
 }
-
-#scoreBoard.leftBoard{
-  left:50px;
-}
-#scoreBoard:not(.leftBoard){
-  right: 50px;
-}
-
 #scoreBoard>ul {
   padding-left: 20px;
   padding-right: 20px;
