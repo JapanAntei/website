@@ -351,20 +351,20 @@ const controlBlock: {
 
         if(controlBlock.rotateType === 0){
           if(new_rot === 0){
-            if(rotating(-rotateDirection, 0)) {}
-            else if (rotating(-rotateDirection, 1)) {}
+            if(rotating(controlBlock.rot === 1 ? 1 : -1, 0)) {}
+            else if (rotating(controlBlock.rot === 1 ? 1 : -1, 1)) {}
             else if (rotating(0, -2)) {}
-            else if (rotating(-rotateDirection, -2)) {}
+            else if (rotating(controlBlock.rot === 1 ? 1 : -1, -2)) {}
           } else if(new_rot === 1){
             if(rotating(-1, 0)) {}
             else if (rotating(-1, -1)) {}
             else if (rotating(0, 2)) {}
             else if (rotating(-1, 2)) {}
           } else if(new_rot === 2){
-            if(rotating(-rotateDirection, 0)) {}
-            else if (rotating(-rotateDirection, -1)) {}
+            if(rotating(controlBlock.rot === 1 ? 1 : -1, 0)) {}
+            else if (rotating(controlBlock.rot === 1 ? 1 : -1, -1)) {}
             else if (rotating(0, -2)) {}
-            else if (rotating(-1, -2)) {}
+            else if (rotating(controlBlock.rot === 1 ? 1 : -1, -2)) {}
           } else if(new_rot === 3){
             if(rotating(1, 0)) {}
             else if (rotating(1, -1)) {}
