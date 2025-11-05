@@ -772,11 +772,14 @@ const pauseControl = (e?: TouchEvent | MouseEvent) => {
 
 watch(() => props.pausing, (val)=>{
   if(!val){
-      gamePaused = false;
-                  drawGameField();
-            timeoutID = setTimeout(loopGame, speed);
+    gamePaused = false;
+    drawGameField();
+    timeoutID = setTimeout(loopGame, speed);
   }else if(!gameEffecting){
-        gamePaused = true;
+    gamePaused = true;
+    lKeyPressed = false;
+    rKeyPressed = false;
+    dKeyPressed = false;
     gamePause(tfield.value?.getContext("2d")!);
   }
 })
@@ -792,7 +795,6 @@ const confirmResetGame = (e: TouchEvent | MouseEvent) => {
 
 
 const touchEnd = (buttonID: "drop" | "left" | "right" | "down") =>  {
-  console.log("aiueo")
   if (buttonID == "drop") {          // space
     spacePressed = false;
   } else if (buttonID == "left") {   // ←
