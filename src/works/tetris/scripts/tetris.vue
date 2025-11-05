@@ -600,6 +600,7 @@ const removeLinesEffect = function (removeLines: number[]) {
       }
       gamePaused = false;
       drawGameField();
+      gameEffecting = false;
       timeoutID = setTimeout(loopGame, speed);
     })()
   } else {
@@ -757,6 +758,9 @@ document.addEventListener("keydown",(e) => {
       controlBlock.rotate(-1);
       
     }
+  }
+  if(gameEffecting){
+    e.preventDefault();
   }
   if (equalKeyCode(props.keyBinds.pause, keycode) && !gameEnd) {
     pauseControl();
