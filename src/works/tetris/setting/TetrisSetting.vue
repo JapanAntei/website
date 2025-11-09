@@ -20,6 +20,7 @@ const holdNum = useTemplateRef("holdNum")
 const randomType = useTemplateRef("randomType")
 const rotateSystem = useTemplateRef("rotateSystem")
 const DLEffect = useTemplateRef("DLEffect")
+const ghost = useTemplateRef("ghost")
 const shapeCount = [...Array(shapes.length)].map((_, i) => i)
 const shapeField = ref<HTMLCanvasElement[]>([])
 const setShapeFieldRef = (el: any) => {
@@ -44,6 +45,7 @@ const saveSettings = () => {
         dropShapes: Array.from(document.querySelectorAll<HTMLInputElement>(".randomShape")).filter(elem => elem.checked).map((elem) => Number(elem.dataset.shapeNumber)).toSorted(),
         rotateSystem: rotateSystem.value?.checked,
         DLEffect: DLEffect.value?.checked,
+        ghost: ghost.value?.checked,
     }))
 }
 
@@ -57,6 +59,7 @@ const resetSettings = () => {
     if(randomType.value) randomType.value.checked = defaultSettings.randomType;
     if(rotateSystem.value) rotateSystem.value.checked = defaultSettings.rotateSystem;
     if(DLEffect.value) DLEffect.value.checked = defaultSettings.DLEffect;
+    if(ghost.value) ghost.value.checked = defaultSettings.ghost;
     for(const elem of document.querySelectorAll<HTMLInputElement>(".startingShape")){
         elem.checked = defaultSettings.startingShapes.includes(Number(elem.dataset.shapeNumber))
     }
@@ -108,6 +111,10 @@ const resetSettings = () => {
             <li style="vertical-align: top">
                 <input ref="DLEffect" type="checkbox" id="DLEffect" :checked="settings.DLEffect">
                 <label for="DLEffect" style="display: inline-block;">ライン消去時にアニメーションをする</label>
+            </li>
+            <li style="vertical-align: top">
+                <input ref="ghost" type="checkbox" id="ghost" :checked="settings.ghost">
+                <label for="ghost" style="display: inline-block;">ゴーストブロックを表示する</label>
             </li>
 
         </ul>

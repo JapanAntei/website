@@ -28,7 +28,7 @@ THE SOFTWARE.
 */
 
 import { gameOver, gamePause, drawNext, genBlock, genStrokedBlock } from './canvasController';
-import { bigBlockBox, blockNumHeight, blockNumWidth, blockSize, DLEffect, fieldColor, fieldHeight, fieldWidth, holdNum, nextNum, smallBlockBox, startingShapes, dropShapes, getSettingObj, type shape, type shapeData, randomType, rotateSystem} from './globalData';
+import { bigBlockBox, blockNumHeight, blockNumWidth, blockSize, DLEffect, fieldColor, fieldHeight, fieldWidth, holdNum, nextNum, smallBlockBox, startingShapes, dropShapes, getSettingObj, type shape, type shapeData, randomType, rotateSystem, ghost} from './globalData';
 import { ref, onMounted,/*, onBeforeUpdate*/ 
 watch,
 } from 'vue';
@@ -562,14 +562,16 @@ const controlBlock: {
   // テトリミノ影描画
   drawShadow: () => {
     const ghostPos = controlBlock.getShadowPos();
-    for(const block of controlBlock.shape.shapes[controlBlock.rot]){
-      genStrokedBlock(
-        tfield.value!,
-        (ghostPos[0] + block[0]) * blockSize,
-        (ghostPos[1] + block[1]) * blockSize,
-        "rgba(250,250,250,0.1)",
-        "rgba(250,250,250,0.2)"
-      );
+    if(ghost){
+      for(const block of controlBlock.shape.shapes[controlBlock.rot]){
+        genStrokedBlock(
+          tfield.value!,
+          (ghostPos[0] + block[0]) * blockSize,
+          (ghostPos[1] + block[1]) * blockSize,
+          "rgba(250,250,250,0.1)",
+          "rgba(250,250,250,0.2)"
+        );
+      }
     }
   }
 }
