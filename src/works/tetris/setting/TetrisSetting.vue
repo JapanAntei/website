@@ -71,6 +71,47 @@ const resetSettings = () => {
     }
 }
 
+const moreGoMeTetrisSettings = () => {
+    const modifiedSettings = structuredClone(defaultSettings)
+    modifiedSettings.randomType = true;
+    modifiedSettings.startingShapes = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21]
+    modifiedSettings.dropShapes = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21]
+    localStorage.setItem(props.setttingId ?? "GoMeTetrisSettings", JSON.stringify(modifiedSettings))
+    if(randomType.value) randomType.value.checked = modifiedSettings.randomType;
+    for(const elem of document.querySelectorAll<HTMLInputElement>(".startingShape")){
+        elem.checked = modifiedSettings.startingShapes.includes(Number(elem.dataset.shapeNumber))
+    }
+    for(const elem of document.querySelectorAll<HTMLInputElement>(".randomShape")){
+        elem.checked = modifiedSettings.dropShapes.includes(Number(elem.dataset.shapeNumber))
+    }
+}
+const normalGoMeTetrisSettings = () => {
+    const modifiedSettings = structuredClone(defaultSettings)
+    modifiedSettings.nextNum = 5
+    modifiedSettings.holdNum = 1
+    modifiedSettings.randomType = false;
+    modifiedSettings.rotateSystem = true
+    modifiedSettings.DLEffect = true;
+    modifiedSettings.ghost = true;
+    modifiedSettings.lockdownSystem = true;
+    modifiedSettings.startingShapes = [2,3,5,6]
+    modifiedSettings.dropShapes = [0,1,2,3,4,5,6,7]
+    localStorage.setItem(props.setttingId ?? "GoMeTetrisSettings", JSON.stringify(modifiedSettings))
+    if(nextNum.value) nextNum.value.value = defaultSettings.nextNum.toString()
+    if(holdNum.value) holdNum.value.value = defaultSettings.holdNum.toString()
+    if(randomType.value) randomType.value.checked = defaultSettings.randomType;
+    if(rotateSystem.value) rotateSystem.value.checked = defaultSettings.rotateSystem;
+    if(DLEffect.value) DLEffect.value.checked = defaultSettings.DLEffect;
+    if(ghost.value) ghost.value.checked = defaultSettings.ghost;
+    if(lockdownSystem.value) lockdownSystem.value.checked = defaultSettings.lockdownSystem;
+    for(const elem of document.querySelectorAll<HTMLInputElement>(".startingShape")){
+        elem.checked = defaultSettings.startingShapes.includes(Number(elem.dataset.shapeNumber))
+    }
+    for(const elem of document.querySelectorAll<HTMLInputElement>(".randomShape")){
+        elem.checked = defaultSettings.dropShapes.includes(Number(elem.dataset.shapeNumber))
+    }
+}
+
 </script>
 
 <template>
@@ -143,6 +184,9 @@ const resetSettings = () => {
         </div>
         <button @click="saveSettings">設定を保存する</button>
         <button @click="resetSettings">設定をリセットする</button>
+        <br />
+        <button @click="moreGoMeTetrisSettings">もっと！ Go Me Tetris</button>
+        <button @click="normalGoMeTetrisSettings">通常のテトリス</button>
     </details>
 </template>
 
