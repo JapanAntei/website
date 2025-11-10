@@ -19,6 +19,7 @@ interface TetrisSettings {
     randomType: boolean;
     rotateSystem: boolean;
     ghost: boolean;
+    lockdownSystem: boolean;
 }
 export const defaultSettings: TetrisSettings = {
     blockSize: 20,
@@ -32,6 +33,7 @@ export const defaultSettings: TetrisSettings = {
     randomType:true,
     rotateSystem: false,
     ghost: true,
+    lockdownSystem: true,
 };
 
 export let fieldColor = "#202020"; // フィールド背景色
@@ -59,6 +61,8 @@ export let rotateSystem = defaultSettings["rotateSystem"]
 
 export let ghost = defaultSettings["ghost"]
 
+export let lockdownSystem = defaultSettings["lockdownSystem"]
+
 export function getSettingObj(storageName?: string): TetrisSettings{
     localStorageSettings = null
     blockSize = Number(getSetting("blockSize", storageName))
@@ -72,6 +76,7 @@ export function getSettingObj(storageName?: string): TetrisSettings{
     randomType = getSetting("randomType", storageName)
     rotateSystem = Boolean(getSetting("rotateSystem", storageName))
     ghost = Boolean(getSetting("ghost", storageName))
+    lockdownSystem = Boolean(getSetting("lockdownSystem", storageName))
 
     fieldWidth = blockNumWidth * blockSize; // フィールド幅
     fieldHeight = blockNumHeight * blockSize; // フィールド高さ
@@ -89,6 +94,7 @@ export function getSettingObj(storageName?: string): TetrisSettings{
         randomType,
         rotateSystem,
         ghost,
+        lockdownSystem,
     }
 }
 

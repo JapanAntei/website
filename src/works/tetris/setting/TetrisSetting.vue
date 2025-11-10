@@ -21,6 +21,7 @@ const randomType = useTemplateRef("randomType")
 const rotateSystem = useTemplateRef("rotateSystem")
 const DLEffect = useTemplateRef("DLEffect")
 const ghost = useTemplateRef("ghost")
+const lockdownSystem = useTemplateRef("lockdownSystem")
 const shapeCount = [...Array(shapes.length)].map((_, i) => i)
 const shapeField = ref<HTMLCanvasElement[]>([])
 const setShapeFieldRef = (el: any) => {
@@ -46,6 +47,7 @@ const saveSettings = () => {
         rotateSystem: rotateSystem.value?.checked,
         DLEffect: DLEffect.value?.checked,
         ghost: ghost.value?.checked,
+        lockdownSystem: lockdownSystem.value?.checked,
     }))
 }
 
@@ -60,6 +62,7 @@ const resetSettings = () => {
     if(rotateSystem.value) rotateSystem.value.checked = defaultSettings.rotateSystem;
     if(DLEffect.value) DLEffect.value.checked = defaultSettings.DLEffect;
     if(ghost.value) ghost.value.checked = defaultSettings.ghost;
+    if(lockdownSystem.value) lockdownSystem.value.checked = defaultSettings.lockdownSystem;
     for(const elem of document.querySelectorAll<HTMLInputElement>(".startingShape")){
         elem.checked = defaultSettings.startingShapes.includes(Number(elem.dataset.shapeNumber))
     }
@@ -94,6 +97,10 @@ const resetSettings = () => {
             <li style="vertical-align: top">
                 <input ref="rotateSystem" type="checkbox" id="rotateSystem" :checked="settings.rotateSystem">
                 <label for="rotateSystem" style="display: inline-block;">SRS回転を有効にする</label>
+            </li>
+            <li style="vertical-align: top">
+                <input ref="lockdownSystem" type="checkbox" id="lockdownSystem" :checked="settings.lockdownSystem">
+                <label for="lockdownSystem" style="display: inline-block;">ロックダウンを有効にする</label>
             </li>
             
 

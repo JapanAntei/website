@@ -28,7 +28,7 @@ THE SOFTWARE.
 */
 
 import { gameOver, gamePause, drawNext, genBlock, genStrokedBlock } from './canvasController';
-import { bigBlockBox, blockNumHeight, blockNumWidth, blockSize, DLEffect, fieldColor, fieldHeight, fieldWidth, holdNum, nextNum, smallBlockBox, startingShapes, dropShapes, getSettingObj, type shape, type shapeData, randomType, rotateSystem, ghost} from './globalData';
+import { bigBlockBox, blockNumHeight, blockNumWidth, blockSize, DLEffect, fieldColor, fieldHeight, fieldWidth, holdNum, nextNum, smallBlockBox, startingShapes, dropShapes, getSettingObj, type shape, type shapeData, randomType, rotateSystem, ghost, lockdownSystem} from './globalData';
 import { ref, onMounted,/*, onBeforeUpdate*/ 
 watch,
 } from 'vue';
@@ -154,7 +154,8 @@ let lTimeout: NodeJS.Timeout;
 let rTimeout: NodeJS.Timeout;
 let dTimeout: NodeJS.Timeout;
 let sensitivity = 240;
-let checkLongPress = 500
+let checkLongPress = 500;
+let lockdownCount = 0;
 let disableDown = false;
 
 let held: boolean[] = []
@@ -165,6 +166,7 @@ let gamePaused = false;
 let gameEffecting = false;
 
 let timeoutID: NodeJS.Timeout;
+let lockdownTimeoutID: NodeJS.Timeout;
 
 // ゲームキャンバス初期化
 let tfield = ref<HTMLCanvasElement>();   // HTML側の canvas タグ
@@ -204,9 +206,8 @@ onMounted(() => {
 function resetGame() {
   gameEnd = false;
   if(gamePaused){
-
     emit("resetPause")
-  gamePaused = false
+    gamePaused = false
   }
   clearTimeout(timeoutID)
   getSettingObj()
@@ -284,6 +285,7 @@ const controlBlock: {
   color: string,
   X: number,
   Y: number,
+  lowestBlock: number,
   rot: number,
   rotateType: number,
   reset: () => unknown
@@ -298,6 +300,7 @@ const controlBlock: {
   hold: (key: number) => unknown
   draw: () => unknown
   drawShadow: () => unknown
+  checkLockdown: (countdown?: boolean) => unknown
 
 } = {
   shape: shapes[0],
@@ -307,6 +310,7 @@ const controlBlock: {
   Y: -1,
   rot: 0,
   rotateType: 0,
+  lowestBlock: -Infinity,
   reset: () => {
     if(dKeyPressed){
       disableDown = true;
@@ -320,110 +324,101 @@ const controlBlock: {
     controlBlock.color = controlBlock.shape.color
     controlBlock.rot = 0
     controlBlock.rotateType = controlBlock.shape.rotateType ?? 0;
+    controlBlock.lowestBlock = -Infinity;
     blocksDropped.value += 1;
     srsMultiply = 1;
     randomBlocks()
     held = held.map(_ => false)
+    lockdownCount = 0;
     drawNext(nextFields.value, nextShape, (n) => n == 0 ? 1 : 0.5)
+    if(lockdownTimeoutID){
+      clearTimeout(lockdownTimeoutID)
+      lockdownTimeoutID = 0 as unknown as NodeJS.Timeout;
+      loopGame()
+    }
   },
   // テトリミノ回転 (時計回り)
   rotate: (rotateDirection: -1 | 1) => {
     const new_rot = (controlBlock.rot + rotateDirection) & 3;
     const sh = controlBlock.shape.shapes[new_rot];
-    if (!controlBlock.collision(0, 0, sh)) {
-      controlBlock.rot = new_rot;
-      drawGameField();
+    const rotating = (X: number, Y: number, Fn: (() => void) = (() => undefined)): boolean => {
+      if(controlBlock.collision(X,Y,sh)){
+        return false;
+      } else {
+        controlBlock.rot = new_rot;
+        controlBlock.X += X;
+        controlBlock.Y += Y;
+        Fn();
+        controlBlock.checkLockdown();
+        drawGameField();
+        return true
+      }
+    }
+    if (rotating(0, 0)) {
     } else {
       if(rotateSystem){
-
-        const rotating = (X: number, Y: number): boolean => {
-          if(controlBlock.collision(X,Y,sh)){
-            return false;
-          } else {
-            controlBlock.rot = new_rot;
-            controlBlock.X += X;
-            controlBlock.Y += Y;
-            srsMultiply++;
-            drawGameField();
-            return true
-          }
-        }
-
         if(controlBlock.rotateType === 0){
           if(new_rot === 0){
-            if(rotating(controlBlock.rot === 1 ? 1 : -1, 0)) {}
-            else if (rotating(controlBlock.rot === 1 ? 1 : -1, 1)) {}
-            else if (rotating(0, -2)) {}
-            else if (rotating(controlBlock.rot === 1 ? 1 : -1, -2)) {}
+            if(rotating(controlBlock.rot === 1 ? 1 : -1, 0, () => srsMultiply++)) {}
+            else if (rotating(controlBlock.rot === 1 ? 1 : -1, 1, () => srsMultiply++)) {}
+            else if (rotating(0, -2, () => srsMultiply++)) {}
+            else if (rotating(controlBlock.rot === 1 ? 1 : -1, -2, () => srsMultiply++)) {}
           } else if(new_rot === 1){
-            if(rotating(-1, 0)) {}
-            else if (rotating(-1, -1)) {}
-            else if (rotating(0, 2)) {}
-            else if (rotating(-1, 2)) {}
+            if(rotating(-1, 0, () => srsMultiply++)) {}
+            else if (rotating(-1, -1, () => srsMultiply++)) {}
+            else if (rotating(0, 2, () => srsMultiply++)) {}
+            else if (rotating(-1, 2, () => srsMultiply++)) {}
           } else if(new_rot === 2){
-            if(rotating(controlBlock.rot === 1 ? 1 : -1, 0)) {}
-            else if (rotating(controlBlock.rot === 1 ? 1 : -1, -1)) {}
-            else if (rotating(0, -2)) {}
-            else if (rotating(controlBlock.rot === 1 ? 1 : -1, -2)) {}
+            if(rotating(controlBlock.rot === 1 ? 1 : -1, 0, () => srsMultiply++)) {}
+            else if (rotating(controlBlock.rot === 1 ? 1 : -1, -1, () => srsMultiply++)) {}
+            else if (rotating(0, -2, () => srsMultiply++)) {}
+            else if (rotating(controlBlock.rot === 1 ? 1 : -1, -2, () => srsMultiply++)) {}
           } else if(new_rot === 3){
-            if(rotating(1, 0)) {}
-            else if (rotating(1, -1)) {}
-            else if (rotating(0, 2)) {}
-            else if (rotating(1, 2)) {}
+            if(rotating(1, 0, () => srsMultiply++)) {}
+            else if (rotating(1, -1, () => srsMultiply++)) {}
+            else if (rotating(0, 2, () => srsMultiply++)) {}
+            else if (rotating(1, 2, () => srsMultiply++)) {}
           }
         } else if(controlBlock.rotateType === 1){
           if(new_rot === 0){
-            if(rotating(-2 * rotateDirection,0)){}
-            else if(rotating(rotateDirection,0)){}
-            else if(controlBlock.rot == 1 && rotating(2,-1)){}
-            else if(controlBlock.rot == 3 && rotating(1,2)){}
-            else if(controlBlock.rot == 1 && rotating(-1,2)){}
-            else if(controlBlock.rot == 3 && rotating(-2,-1)){}
+            if(rotating(-2 * rotateDirection,0, () => srsMultiply++)){}
+            else if(rotating(rotateDirection,0, () => srsMultiply++)){}
+            else if(controlBlock.rot == 1 && rotating(2,-1, () => srsMultiply++)){}
+            else if(controlBlock.rot == 3 && rotating(1,2, () => srsMultiply++)){}
+            else if(controlBlock.rot == 1 && rotating(-1,2, () => srsMultiply++)){}
+            else if(controlBlock.rot == 3 && rotating(-2,-1, () => srsMultiply++)){}
           } else if(new_rot === 1){
-            if(controlBlock.rot == 0 && rotating(-2,0)){}
-            else if(controlBlock.rot == 2 && rotating(1,0)){}
-            else if(controlBlock.rot == 0 && rotating(1,0)){}
-            else if(controlBlock.rot == 2 && rotating(-2,0)){}
-            else if(controlBlock.rot == 0 && rotating(-2,1)){}
-            else if(controlBlock.rot == 2 && rotating(1,2)){}
-            else if(controlBlock.rot == 0 && rotating(1,-2)){}
-            else if(controlBlock.rot == 2 && rotating(-2,-1)){}
+            if(controlBlock.rot == 0 && rotating(-2,0, () => srsMultiply++)){}
+            else if(controlBlock.rot == 2 && rotating(1,0, () => srsMultiply++)){}
+            else if(controlBlock.rot == 0 && rotating(1,0, () => srsMultiply++)){}
+            else if(controlBlock.rot == 2 && rotating(-2,0, () => srsMultiply++)){}
+            else if(controlBlock.rot == 0 && rotating(-2,1, () => srsMultiply++)){}
+            else if(controlBlock.rot == 2 && rotating(1,2, () => srsMultiply++)){}
+            else if(controlBlock.rot == 0 && rotating(1,-2, () => srsMultiply++)){}
+            else if(controlBlock.rot == 2 && rotating(-2,-1, () => srsMultiply++)){}
           } else if(new_rot === 2){
-            if(rotating(-rotateDirection,0)){}
-            else if(rotating(2 * rotateDirection,0)){}
-            else if(controlBlock.rot == 1 && rotating(-1,-2)){}
-            else if(controlBlock.rot == 3 && rotating(-2,1)){}
-            else if(controlBlock.rot == 1 && rotating(2,1)){}
-            else if(controlBlock.rot == 3 && rotating(1,-2)){}
+            if(rotating(-rotateDirection,0, () => srsMultiply++)){}
+            else if(rotating(2 * rotateDirection,0, () => srsMultiply++)){}
+            else if(controlBlock.rot == 1 && rotating(-1,-2, () => srsMultiply++)){}
+            else if(controlBlock.rot == 3 && rotating(-2,1, () => srsMultiply++)){}
+            else if(controlBlock.rot == 1 && rotating(2,1, () => srsMultiply++)){}
+            else if(controlBlock.rot == 3 && rotating(1,-2, () => srsMultiply++)){}
           } else if(new_rot === 3){
-            if(controlBlock.rot == 0 && rotating(-1,0)){}
-            else if(controlBlock.rot == 2 && rotating(2,0)){}
-            else if(controlBlock.rot == 0 && rotating(2,0)){}
-            else if(controlBlock.rot == 2 && rotating(-1,0)){}
-            else if(controlBlock.rot == 0 && rotating(-1,-2)){}
-            else if(controlBlock.rot == 2 && rotating(2,-1)){}
-            else if(controlBlock.rot == 0 && rotating(2,1)){}
-            else if(controlBlock.rot == 2 && rotating(-1,2)){}
+            if(controlBlock.rot == 0 && rotating(-1,0, () => srsMultiply++)){}
+            else if(controlBlock.rot == 2 && rotating(2,0, () => srsMultiply++)){}
+            else if(controlBlock.rot == 0 && rotating(2,0, () => srsMultiply++)){}
+            else if(controlBlock.rot == 2 && rotating(-1,0, () => srsMultiply++)){}
+            else if(controlBlock.rot == 0 && rotating(-1,-2, () => srsMultiply++)){}
+            else if(controlBlock.rot == 2 && rotating(2,-1, () => srsMultiply++)){}
+            else if(controlBlock.rot == 0 && rotating(2,1, () => srsMultiply++)){}
+            else if(controlBlock.rot == 2 && rotating(-1,2, () => srsMultiply++)){}
           }
         }
       } else {
-        if (!controlBlock.collision(rotateDirection, 0, sh)) {
-          controlBlock.rot = new_rot;
-          controlBlock.X += rotateDirection;
-          drawGameField();
-        } else if (!controlBlock.collision(-rotateDirection,0, sh)) {
-          controlBlock.rot = new_rot;
-          controlBlock.X += -rotateDirection
-          drawGameField();
-        } else if (!controlBlock.collision(2 * rotateDirection,0, sh)) {
-          controlBlock.rot = new_rot;
-          controlBlock.X += 2 * rotateDirection;
-          drawGameField();
-        } else if (!controlBlock.collision(-2 * rotateDirection, 0, sh)) {
-          controlBlock.X += -2 * rotateDirection;
-          controlBlock.rot = new_rot;
-          drawGameField();
-        }
+        if (rotating(rotateDirection, 0)) {}
+        else if (rotating(-rotateDirection, 0)) {}
+        else if (rotating(2 * rotateDirection, 0)) {}
+        else if (rotating(-2 * rotateDirection, 0)) {}
       }
     }
   },
@@ -431,35 +426,27 @@ const controlBlock: {
 
   // 落ちてくるテトリミノの影
   getShadowPos: () => {
-
     let lowestHeight = 0;
-    collision: while (true){
-      for(const elem of controlBlock.shape.shapes[controlBlock.rot]){
-        if(
-          controlBlock.Y + lowestHeight + elem[1] >= 0 &&
-      (
-          fields[controlBlock.Y + lowestHeight + elem[1]][controlBlock.X + elem[0]] !== fieldColor)
-        ) break collision;
-      }
+    while(!controlBlock.collision(0,lowestHeight + 1)){
       lowestHeight++;
     }
-
-    const ghostY = lowestHeight + controlBlock.Y - 1
-    return [controlBlock.X, ghostY];
+    return [controlBlock.X, lowestHeight + controlBlock.Y];
   },
 
   // テトリミノダウン処理
   moveDown: () => {
-    for(const block of controlBlock.shape.shapes[controlBlock.rot]){
-      const cx = controlBlock.X + block[0]
-      const cy = controlBlock.Y + block[1] + 1
-      if (cx > -1 && cy > -1 && (fields[cy][cx] != fieldColor || cy == blockNumHeight)) {
+    if (controlBlock.collision(0, 1)) {
+      if(lockdownSystem){
+        srsMultiply = 0;
+        lockdownTimeoutID = setTimeout(controlBlock.kill, 500)
+      }else{
         controlBlock.kill();
-        drawGameField();
-        return
       }
+      drawGameField();
+      return
     }
     controlBlock.Y++;
+    controlBlock.checkLockdown(false)
     srsMultiply = 0;
     drawGameField();
   },
@@ -470,6 +457,8 @@ const controlBlock: {
       const cx = controlBlock.X + dx + block[0]
       const cy = controlBlock.Y + dy + block[1]
       if(cx < 0 || blockNumWidth <= cx){
+        return true
+      }else if(cy >=blockNumHeight){
         return true
       } else if (cy >= 0 && fields[cy][cx] !== fieldColor){
         return true;
@@ -482,6 +471,7 @@ const controlBlock: {
   moveLeft: () => {
     if (!controlBlock.collision(-1, 0)) {
       controlBlock.X--;
+      controlBlock.checkLockdown();
       drawGameField();
     }
   },
@@ -490,6 +480,7 @@ const controlBlock: {
   moveRight: () => {
     if (!controlBlock.collision( 1, 0)) {
       controlBlock.X++;
+      controlBlock.checkLockdown();
       drawGameField();
     }
   },
@@ -539,6 +530,14 @@ const controlBlock: {
       controlBlock.rot = 0;
       controlBlock.X = Math.floor(blockNumWidth / 2) - 1
       controlBlock.Y = -1
+      controlBlock.lowestBlock = -Infinity
+      controlBlock.checkLockdown(false);
+      lockdownCount = 0;
+      if(lockdownTimeoutID){
+        clearTimeout(lockdownTimeoutID)
+        lockdownTimeoutID = 0 as unknown as NodeJS.Timeout;
+        loopGame()
+      }
       srsMultiply = 1;
       held[key] = true
       drawGameField();
@@ -563,6 +562,7 @@ const controlBlock: {
   drawShadow: () => {
     const ghostPos = controlBlock.getShadowPos();
     if(ghost){
+      console.log(ghostPos)
       for(const block of controlBlock.shape.shapes[controlBlock.rot]){
         genStrokedBlock(
           tfield.value!,
@@ -571,6 +571,29 @@ const controlBlock: {
           "rgba(250,250,250,0.1)",
           "rgba(250,250,250,0.2)"
         );
+      }
+    }
+  },
+
+  checkLockdown: (countdown = true) => {
+    let lowest = false;
+    for(const block of controlBlock.shape.shapes[controlBlock.rot]){
+      if(block[1] + controlBlock.Y > controlBlock.lowestBlock){
+         lockdownCount = 0;
+         controlBlock.lowestBlock = block[1] + controlBlock.Y
+         lowest = true;
+      }
+    }
+    if(!lowest && countdown){
+      lockdownCount++;
+      console.log(lockdownCount)
+    }
+    if(lockdownTimeoutID){
+      if(lockdownCount > 15){
+        controlBlock.kill();
+      } else {
+        clearTimeout(lockdownTimeoutID)
+        lockdownTimeoutID = setTimeout(controlBlock.kill, 500)
       }
     }
   }
@@ -615,7 +638,6 @@ const removeLinesEffect = function (removeLines: number[]) {
   }
 }
 const removeLines = function () {
-  // 一度に消せるのは最大４行
   const deleteLines: number[] = []
   checkLine: for (let i = 0; i < fields.length; i++) {
     for (const block of fields[i]) {
@@ -641,8 +663,8 @@ const removeLines = function () {
 
 // ゲームフォールド描画
 const drawGameField = function () {
-  for (var y = 0; y < blockNumHeight; y++) {
-    for (var x = 0; x < blockNumWidth; x++) {
+  for (let y = 0; y < blockNumHeight; y++) {
+    for (let x = 0; x < blockNumWidth; x++) {
       genBlock(tfield.value!, x, y, fields[y][x]);
     }
   }
@@ -893,9 +915,11 @@ const loopGame = function () {
     if (!gameEnd) {
       if (!gamePaused) {
         controlBlock.moveDown();
-        timeoutID = setTimeout(loopGame, speed);
-        removeLines();
-        drawGameField();
+        if(!lockdownTimeoutID){
+          timeoutID = setTimeout(loopGame, speed);
+          removeLines();
+          drawGameField();
+        }
       }
     } else {
       gameOver(tfield.value?.getContext("2d")!, score.value);
