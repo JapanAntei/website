@@ -18,6 +18,8 @@ interface TetrisSettings {
     dropShapes: number[];
     randomType: boolean;
     rotateSystem: boolean;
+    ghost: boolean;
+    lockdownSystem: boolean;
 }
 export const defaultSettings: TetrisSettings = {
     blockSize: 20,
@@ -29,7 +31,9 @@ export const defaultSettings: TetrisSettings = {
     startingShapes: [2, 3, 5, 6],
     dropShapes: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13/* ,14, 15, 16,17,18*/],
     randomType:true,
-    rotateSystem: false
+    rotateSystem: false,
+    ghost: true,
+    lockdownSystem: true,
 };
 
 export let fieldColor = "#202020"; // フィールド背景色
@@ -55,6 +59,10 @@ export let randomType = defaultSettings["randomType"]; // 横ブロック数
 
 export let rotateSystem = defaultSettings["rotateSystem"]
 
+export let ghost = defaultSettings["ghost"]
+
+export let lockdownSystem = defaultSettings["lockdownSystem"]
+
 export function getSettingObj(storageName?: string): TetrisSettings{
     localStorageSettings = null
     blockSize = Number(getSetting("blockSize", storageName))
@@ -67,6 +75,8 @@ export function getSettingObj(storageName?: string): TetrisSettings{
     dropShapes = getSetting("dropShapes", storageName)
     randomType = getSetting("randomType", storageName)
     rotateSystem = Boolean(getSetting("rotateSystem", storageName))
+    ghost = Boolean(getSetting("ghost", storageName))
+    lockdownSystem = Boolean(getSetting("lockdownSystem", storageName))
 
     fieldWidth = blockNumWidth * blockSize; // フィールド幅
     fieldHeight = blockNumHeight * blockSize; // フィールド高さ
@@ -82,7 +92,9 @@ export function getSettingObj(storageName?: string): TetrisSettings{
         startingShapes,
         dropShapes,
         randomType,
-        rotateSystem
+        rotateSystem,
+        ghost,
+        lockdownSystem,
     }
 }
 
