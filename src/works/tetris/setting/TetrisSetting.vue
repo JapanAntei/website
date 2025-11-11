@@ -22,6 +22,8 @@ const rotateSystem = useTemplateRef("rotateSystem")
 const DLEffect = useTemplateRef("DLEffect")
 const ghost = useTemplateRef("ghost")
 const lockdownSystem = useTemplateRef("lockdownSystem")
+const scoreDisplay = useTemplateRef("scoreDisplay")
+const scoreDetails = useTemplateRef("scoreDetails")
 const shapeCount = [...Array(shapes.length)].map((_, i) => i)
 const shapeField = ref<HTMLCanvasElement[]>([])
 const setShapeFieldRef = (el: any) => {
@@ -35,6 +37,7 @@ const setShapeFieldRef = (el: any) => {
 
 
 const saveSettings = () => {
+    console.log("aiueo")
     localStorage.setItem(props.setttingId ?? "GoMeTetrisSettings", JSON.stringify({
         blockSize: Number(blockSize.value?.value),
         blockNumHeight: Number(blockNumHeight.value?.value),
@@ -48,6 +51,8 @@ const saveSettings = () => {
         DLEffect: DLEffect.value?.checked,
         ghost: ghost.value?.checked,
         lockdownSystem: lockdownSystem.value?.checked,
+        scoreDetails: scoreDetails.value?.checked,
+        scoreDisplay: scoreDisplay.value?.checked,
     }))
 }
 
@@ -63,6 +68,8 @@ const resetSettings = () => {
     if(DLEffect.value) DLEffect.value.checked = defaultSettings.DLEffect;
     if(ghost.value) ghost.value.checked = defaultSettings.ghost;
     if(lockdownSystem.value) lockdownSystem.value.checked = defaultSettings.lockdownSystem;
+    if(scoreDetails.value) scoreDetails.value.checked = defaultSettings.scoreDetails;
+    if(scoreDisplay.value) scoreDisplay.value.checked = defaultSettings.scoreDisplay;
     for(const elem of document.querySelectorAll<HTMLInputElement>(".startingShape")){
         elem.checked = defaultSettings.startingShapes.includes(Number(elem.dataset.shapeNumber))
     }
@@ -163,6 +170,14 @@ const normalGoMeTetrisSettings = () => {
             <li style="vertical-align: top">
                 <input ref="ghost" type="checkbox" id="ghost" :checked="settings.ghost">
                 <label for="ghost" style="display: inline-block;">ゴーストブロックを表示する</label>
+            </li>
+            <li style="vertical-align: top">
+                <input ref="scoreDisplay" type="checkbox" id="scoreDisplay" :checked="settings.scoreDisplay">
+                <label for="scoreDisplay" style="display: inline-block;">ライン消去時に加算されるスコアを表示する</label>
+            </li>
+            <li style="vertical-align: top">
+                <input ref="scoreDetails" type="checkbox" id="scoreDetails" :checked="settings.scoreDetails">
+                <label for="scoreDetails" style="display: inline-block;">スコアの詳細も表示する</label>
             </li>
 
         </ul>
