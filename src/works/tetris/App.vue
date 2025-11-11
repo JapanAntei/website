@@ -9,7 +9,6 @@ import { ref } from 'vue';
 const pausing = ref(false)
 
 function pause(){
-  console.log("aaaaa")
   pausing.value = !pausing.value
 }
 function resetPause(){

@@ -27,8 +27,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { gameOver, gamePause, drawNext, genBlock, genStrokedBlock } from './canvasController';
-import { bigBlockBox, blockNumHeight, blockNumWidth, blockSize, DLEffect, fieldColor, fieldHeight, fieldWidth, holdNum, nextNum, smallBlockBox, startingShapes, dropShapes, getSettingObj, type shape, type shapeData, randomType, rotateSystem, ghost, lockdownSystem} from './globalData';
+import { gameOver, gamePause, drawNext, genBlock, genStrokedBlock, scoreDisplay, type ScoreStructure } from './canvasController';
+import { bigBlockBox, blockNumHeight, blockNumWidth, blockSize, DLEffect, fieldColor, fieldHeight, fieldWidth, holdNum, nextNum, smallBlockBox, startingShapes, dropShapes, getSettingObj, type shape, type shapeData, randomType, rotateSystem, ghost, lockdownSystem, scoreDisplay as scoreDisplaySetting} from './globalData';
 import { ref, onMounted,/*, onBeforeUpdate*/ 
 watch,
 } from 'vue';
@@ -167,6 +167,9 @@ let gameEffecting = false;
 
 let timeoutID: NodeJS.Timeout;
 let lockdownTimeoutID: NodeJS.Timeout;
+let scoreDisplayTimeoutID: NodeJS.Timeout;
+let scoreDisplaying = false;
+let scoreStructure: ScoreStructure = { score: 0, srs: 0, line:0, level: 0 }
 
 // ゲームキャンバス初期化
 let tfield = ref<HTMLCanvasElement>();   // HTML側の canvas タグ
@@ -246,6 +249,8 @@ function resetGame() {
   controlBlock.reset()
   //startupTouch();
   gameEnd = false;
+  scoreDisplaying = false;
+  scoreStructure = { score: 0, srs: 0, line:0, level: 0 }
   loopGame();
 }
 
@@ -436,9 +441,9 @@ const controlBlock: {
   // テトリミノダウン処理
   moveDown: () => {
     if (controlBlock.collision(0, 1)) {
-      if(lockdownSystem){
-        srsMultiply = 0;
-        lockdownTimeoutID = setTimeout(controlBlock.kill, 500)
+      if(lockdownSystem && lockdownCount < 15){
+        srsMultiply = 1;
+        lockdownTimeoutID = setTimeout(controlBlock.checkLockdown, 500, false)
       }else{
         controlBlock.kill();
       }
@@ -447,7 +452,7 @@ const controlBlock: {
     }
     controlBlock.Y++;
     controlBlock.checkLockdown(false)
-    srsMultiply = 0;
+    srsMultiply = 1;
     drawGameField();
   },
 
@@ -562,7 +567,6 @@ const controlBlock: {
   drawShadow: () => {
     const ghostPos = controlBlock.getShadowPos();
     if(ghost){
-      console.log(ghostPos)
       for(const block of controlBlock.shape.shapes[controlBlock.rot]){
         genStrokedBlock(
           tfield.value!,
@@ -584,16 +588,29 @@ const controlBlock: {
          lowest = true;
       }
     }
-    if(!lowest && countdown){
+    if(!lowest && countdown && !gamePaused){
       lockdownCount++;
-      console.log(lockdownCount)
     }
-    if(lockdownTimeoutID){
+    if(lockdownTimeoutID || controlBlock.collision(0, 1)){
       if(lockdownCount > 15){
-        controlBlock.kill();
+        if (controlBlock.collision(0,1)){
+          controlBlock.kill();
+        } else {
+          clearTimeout(lockdownTimeoutID)
+          lockdownTimeoutID = 0 as unknown as NodeJS.Timeout;
+          if(!gamePaused) loopGame()
+        }
       } else {
         clearTimeout(lockdownTimeoutID)
-        lockdownTimeoutID = setTimeout(controlBlock.kill, 500)
+        lockdownTimeoutID = setTimeout(() => {
+          if (controlBlock.collision(0,1)){
+            controlBlock.kill()
+          } else {
+                      clearTimeout(lockdownTimeoutID)
+            lockdownTimeoutID = 0 as unknown as NodeJS.Timeout;
+            if(!gamePaused) loopGame()
+          }
+        }, 500)
       }
     }
   }
@@ -656,6 +673,16 @@ const removeLines = function () {
     // 点数評価
     const multiplier = 25 * (deleteLines.length ** 2) * srsMultiply;
     score.value += (multiplier * (level.value + 1));
+    if(scoreDisplaySetting){
+      clearTimeout(scoreDisplayTimeoutID!)
+      scoreDisplaying = true;
+      scoreStructure.score = multiplier * (level.value + 1)
+      scoreStructure.srs = srsMultiply
+      scoreStructure.level = level.value
+      scoreStructure.line = deleteLines.length
+      scoreDisplay(tfield.value?.getContext("2d")!, scoreStructure)
+      setTimeout(() => scoreDisplaying = false, 1000);
+    }
     removeLinesEffect(deleteLines)
   }
 }
@@ -670,6 +697,7 @@ const drawGameField = function () {
   }
   controlBlock.drawShadow();
   controlBlock.draw();
+  if(scoreDisplaySetting && scoreDisplaying) scoreDisplay(tfield.value?.getContext("2d")!, scoreStructure);
 }
 
 // 押しっぱなし左移動
@@ -899,7 +927,6 @@ const clickButtons = (buttonID: "drop" | "down" | "left" | "right" | "rotateR" |
 }
 
 const holdButtonClick = (holdID:number) => {
-  console.log(holdID)
   if(!held[holdID]) controlBlock.hold(holdID)
 }
 
