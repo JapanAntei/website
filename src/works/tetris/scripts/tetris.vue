@@ -441,9 +441,9 @@ const controlBlock: {
   // テトリミノダウン処理
   moveDown: () => {
     if (controlBlock.collision(0, 1)) {
-      if(lockdownSystem){
-        srsMultiply = 0;
-        lockdownTimeoutID = setTimeout(controlBlock.kill, 500)
+      if(lockdownSystem && lockdownCount < 15){
+        srsMultiply = 1;
+        lockdownTimeoutID = setTimeout(controlBlock.checkLockdown, 500, false)
       }else{
         controlBlock.kill();
       }
@@ -452,7 +452,7 @@ const controlBlock: {
     }
     controlBlock.Y++;
     controlBlock.checkLockdown(false)
-    srsMultiply = 0;
+    srsMultiply = 1;
     drawGameField();
   },
 
@@ -588,15 +588,29 @@ const controlBlock: {
          lowest = true;
       }
     }
-    if(!lowest && countdown){
+    if(!lowest && countdown && !gamePaused){
       lockdownCount++;
     }
-    if(lockdownTimeoutID){
+    if(lockdownTimeoutID || controlBlock.collision(0, 1)){
       if(lockdownCount > 15){
-        controlBlock.kill();
+        if (controlBlock.collision(0,1)){
+          controlBlock.kill();
+        } else {
+          clearTimeout(lockdownTimeoutID)
+          lockdownTimeoutID = 0 as unknown as NodeJS.Timeout;
+          if(!gamePaused) loopGame()
+        }
       } else {
         clearTimeout(lockdownTimeoutID)
-        lockdownTimeoutID = setTimeout(controlBlock.kill, 500)
+        lockdownTimeoutID = setTimeout(() => {
+          if (controlBlock.collision(0,1)){
+            controlBlock.kill()
+          } else {
+                      clearTimeout(lockdownTimeoutID)
+            lockdownTimeoutID = 0 as unknown as NodeJS.Timeout;
+            if(!gamePaused) loopGame()
+          }
+        }, 500)
       }
     }
   }

@@ -37,7 +37,6 @@ const setShapeFieldRef = (el: any) => {
 
 
 const saveSettings = () => {
-    console.log("aiueo")
     localStorage.setItem(props.setttingId ?? "GoMeTetrisSettings", JSON.stringify({
         blockSize: Number(blockSize.value?.value),
         blockNumHeight: Number(blockNumHeight.value?.value),
