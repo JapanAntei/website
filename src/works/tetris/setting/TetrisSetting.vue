@@ -101,20 +101,20 @@ const normalGoMeTetrisSettings = () => {
     modifiedSettings.ghost = true;
     modifiedSettings.lockdownSystem = true;
     modifiedSettings.startingShapes = [2,3,5,6]
-    modifiedSettings.dropShapes = [0,1,2,3,4,5,6,7]
+    modifiedSettings.dropShapes = [0,1,2,3,4,5]
     localStorage.setItem(props.setttingId ?? "GoMeTetrisSettings", JSON.stringify(modifiedSettings))
-    if(nextNum.value) nextNum.value.value = defaultSettings.nextNum.toString()
-    if(holdNum.value) holdNum.value.value = defaultSettings.holdNum.toString()
-    if(randomType.value) randomType.value.checked = defaultSettings.randomType;
-    if(rotateSystem.value) rotateSystem.value.checked = defaultSettings.rotateSystem;
-    if(DLEffect.value) DLEffect.value.checked = defaultSettings.DLEffect;
-    if(ghost.value) ghost.value.checked = defaultSettings.ghost;
-    if(lockdownSystem.value) lockdownSystem.value.checked = defaultSettings.lockdownSystem;
+    if(nextNum.value) nextNum.value.value = modifiedSettings.nextNum.toString()
+    if(holdNum.value) holdNum.value.value = modifiedSettings.holdNum.toString()
+    if(randomType.value) randomType.value.checked = modifiedSettings.randomType;
+    if(rotateSystem.value) rotateSystem.value.checked = modifiedSettings.rotateSystem;
+    if(DLEffect.value) DLEffect.value.checked = modifiedSettings.DLEffect;
+    if(ghost.value) ghost.value.checked = modifiedSettings.ghost;
+    if(lockdownSystem.value) lockdownSystem.value.checked = modifiedSettings.lockdownSystem;
     for(const elem of document.querySelectorAll<HTMLInputElement>(".startingShape")){
-        elem.checked = defaultSettings.startingShapes.includes(Number(elem.dataset.shapeNumber))
+        elem.checked = modifiedSettings.startingShapes.includes(Number(elem.dataset.shapeNumber))
     }
     for(const elem of document.querySelectorAll<HTMLInputElement>(".randomShape")){
-        elem.checked = defaultSettings.dropShapes.includes(Number(elem.dataset.shapeNumber))
+        elem.checked = modifiedSettings.dropShapes.includes(Number(elem.dataset.shapeNumber))
     }
 }
 
