@@ -536,7 +536,6 @@ const controlBlock: {
       controlBlock.X = Math.floor(blockNumWidth / 2) - 1
       controlBlock.Y = -1
       controlBlock.lowestBlock = -Infinity
-      controlBlock.checkLockdown(false);
       lockdownCount = 0;
       if(lockdownTimeoutID){
         clearTimeout(lockdownTimeoutID)
@@ -606,7 +605,7 @@ const controlBlock: {
           if (controlBlock.collision(0,1)){
             controlBlock.kill()
           } else {
-                      clearTimeout(lockdownTimeoutID)
+            clearTimeout(lockdownTimeoutID)
             lockdownTimeoutID = 0 as unknown as NodeJS.Timeout;
             if(!gamePaused) loopGame()
           }
@@ -643,6 +642,7 @@ const removeLinesEffect = function (removeLines: number[]) {
       gamePaused = false;
       drawGameField();
       gameEffecting = false;
+      window.clearTimeout(timeoutID);
       timeoutID = setTimeout(loopGame, speed);
     })()
   } else {
