@@ -101,7 +101,7 @@ const normalGoMeTetrisSettings = () => {
     modifiedSettings.ghost = true;
     modifiedSettings.lockdownSystem = true;
     modifiedSettings.startingShapes = [2,3,5,6]
-    modifiedSettings.dropShapes = [0,1,2,3,4,5]
+    modifiedSettings.dropShapes = [0,1,2,3,4,5,6]
     localStorage.setItem(props.setttingId ?? "GoMeTetrisSettings", JSON.stringify(modifiedSettings))
     if(nextNum.value) nextNum.value.value = modifiedSettings.nextNum.toString()
     if(holdNum.value) holdNum.value.value = modifiedSettings.holdNum.toString()
