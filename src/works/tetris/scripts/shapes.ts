@@ -17,7 +17,7 @@ import type { shapesData } from "./globalData";
 2:
 ■■■■
 
-2:
+3:
 ■■
 ■■
 
@@ -54,9 +54,36 @@ import type { shapesData } from "./globalData";
 ■■□
 ■□■
 
-12:
+13:
 ■□
 □■
+
+14: 
+■■■■■
+
+15: 
+□□□■
+■■■■
+
+16: 
+■□□□
+■■■■
+
+17: 
+□□■□
+■■■■
+
+18: 
+□■□□
+■■■■
+
+19: 
+□■■
+■■■
+
+20: 
+■■□
+■■■
 
 */
 export const shapes: shapesData = [
@@ -91,7 +118,6 @@ export const shapes: shapesData = [
         ],
         color: "#3cb300",
     },
-
     // ■■
     //  ■■
     {
@@ -123,7 +149,6 @@ export const shapes: shapesData = [
         ],
         color: "#e55050",
     },
-
     // ■■■■
     {
         shapes: [
@@ -155,7 +180,6 @@ export const shapes: shapesData = [
         color: "#88b0e0",
         rotateType: 1,
     },
-
     // ■■
     // ■■
     {
@@ -187,7 +211,6 @@ export const shapes: shapesData = [
         ],
         color: "#fcca00",
     },
-
     // ■
     // ■■■
     {
@@ -219,7 +242,6 @@ export const shapes: shapesData = [
         ],
         color: "#1066de",
     },
-
     //   ■
     // ■■■
     {
@@ -251,7 +273,6 @@ export const shapes: shapesData = [
         ],
         color: "#e07835",
     },
-
     //  ■
     // ■■■
     {
@@ -311,7 +332,6 @@ export const shapes: shapesData = [
         color: "#BB3025",
         rotateType: 0,
     },
-
     // ■■■
     {
         shapes: [
@@ -339,7 +359,6 @@ export const shapes: shapesData = [
         color: "#93F98B",
         rotateType: 0,
     },
-
     // ■
     // ■■
     {
@@ -367,7 +386,6 @@ export const shapes: shapesData = [
         ],
         color: "#A8DCC0",
     },
-
     // ■■□
     // ■□■
     {
@@ -399,7 +417,6 @@ export const shapes: shapesData = [
         ],
         color: "#B0AC00",
     },
-
     // □■■
     // ■□■
     {
@@ -629,9 +646,8 @@ export const shapes: shapesData = [
         ],
         color: "#AA9AAC",
     },
-    // ■□
-    // ■■
-    // ■■
+    // □■■
+    // ■■■
     {
         shapes: [
             [
@@ -665,9 +681,8 @@ export const shapes: shapesData = [
         ],
         color: "#FFE699",
     },
-    // ■■
-    // ■■
-    // ■□
+    // ■■□
+    // ■■■
     {
         shapes: [
             [

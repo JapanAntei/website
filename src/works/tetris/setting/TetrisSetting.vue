@@ -80,8 +80,8 @@ const resetSettings = () => {
 const moreGoMeTetrisSettings = () => {
     const modifiedSettings = structuredClone(defaultSettings)
     modifiedSettings.randomType = true;
-    modifiedSettings.startingShapes = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21]
-    modifiedSettings.dropShapes = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21]
+    modifiedSettings.startingShapes = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+    modifiedSettings.dropShapes = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
     localStorage.setItem(props.setttingId ?? "GoMeTetrisSettings", JSON.stringify(modifiedSettings))
     if(randomType.value) randomType.value.checked = modifiedSettings.randomType;
     for(const elem of document.querySelectorAll<HTMLInputElement>(".startingShape")){
