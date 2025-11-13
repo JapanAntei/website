@@ -248,6 +248,7 @@ function resetGame() {
   gameEnd = false;
   scoreDisplaying = false;
   scoreStructure = { score: 0, srs: 0, line:0, level: 0 }
+  clearTimeout(timeoutID)
   loopGame();
 }
 
@@ -336,6 +337,7 @@ const controlBlock: {
     if(lockdownTimeoutID){
       clearTimeout(lockdownTimeoutID)
       lockdownTimeoutID = 0 as unknown as NodeJS.Timeout;
+      clearTimeout(timeoutID)
       loopGame()
     }
   },
@@ -537,6 +539,7 @@ const controlBlock: {
       if(lockdownTimeoutID){
         clearTimeout(lockdownTimeoutID)
         lockdownTimeoutID = 0 as unknown as NodeJS.Timeout;
+        clearTimeout(timeoutID)
         loopGame()
       }
       srsMultiply = 1;
@@ -594,6 +597,7 @@ const controlBlock: {
         } else {
           clearTimeout(lockdownTimeoutID)
           lockdownTimeoutID = 0 as unknown as NodeJS.Timeout;
+          clearTimeout(timeoutID)
           loopGame()
         }
       } else {
@@ -604,6 +608,7 @@ const controlBlock: {
           } else {
             clearTimeout(lockdownTimeoutID)
             lockdownTimeoutID = 0 as unknown as NodeJS.Timeout;
+            clearTimeout(timeoutID)
             loopGame()
           }
         }, 500)
