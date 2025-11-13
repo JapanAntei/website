@@ -34,7 +34,6 @@ watch,
 } from 'vue';
 import { shapes } from './shapes';
 
-const emit = defineEmits(['pauseButton', "resetPause"])
 /*
  * 画面サイズなどの初期設定を行う変数の初期化
  */
@@ -104,7 +103,6 @@ interface Props{
   left: boolean;
   keyBinds?: KeyBinds;
   keyboardAlias?: KeyboardAlias;
-  pausing: boolean;
 }
 
 interface KeyboardAlias{
@@ -125,10 +123,11 @@ const props = withDefaults(defineProps<Props>(),
       pause:"F"
     }),
     keyboardAlias: (): KeyboardAlias => ({}),
-    pausing: false
   }
 )
 
+const gamePaused = defineModel<boolean>("pausing")
+const gameReset = defineModel<number>("reset")
 
 // ゲーム初期値
 let level = ref(1);
@@ -162,7 +161,6 @@ let held: boolean[] = []
 
 // ゲーム状態
 let gameEnd = true;
-let gamePaused = false;
 let gameEffecting = false;
 
 let timeoutID: NodeJS.Timeout;
@@ -208,9 +206,8 @@ onMounted(() => {
 
 function resetGame() {
   gameEnd = false;
-  if(gamePaused){
-    emit("resetPause")
-    gamePaused = false
+  if(gamePaused.value){
+    gamePaused.value = false;
   }
   clearTimeout(timeoutID)
   getSettingObj()
@@ -494,9 +491,9 @@ const controlBlock: {
   dropDown: () => {
     const ghostPos = controlBlock.getShadowPos();
     for(const block of controlBlock.shape.shapes[controlBlock.rot]){
-
       if (fields[ghostPos[1] + block[1]] != undefined)
         fields[ghostPos[1] + block[1]][ghostPos[0] + block[0]] = controlBlock.color;
+      if(ghostPos[1]+block[1] < 0) gameEnd = true;
     }
     controlBlock.reset();
     removeLines();
@@ -587,7 +584,7 @@ const controlBlock: {
          lowest = true;
       }
     }
-    if(!lowest && countdown && !gamePaused){
+    if(!lowest && countdown && gamePaused.value){
       lockdownCount++;
     }
     if(lockdownTimeoutID || controlBlock.collision(0, 1)){
@@ -597,7 +594,7 @@ const controlBlock: {
         } else {
           clearTimeout(lockdownTimeoutID)
           lockdownTimeoutID = 0 as unknown as NodeJS.Timeout;
-          if(!gamePaused) loopGame()
+          loopGame()
         }
       } else {
         clearTimeout(lockdownTimeoutID)
@@ -607,7 +604,7 @@ const controlBlock: {
           } else {
             clearTimeout(lockdownTimeoutID)
             lockdownTimeoutID = 0 as unknown as NodeJS.Timeout;
-            if(!gamePaused) loopGame()
+            loopGame()
           }
         }, 500)
       }
@@ -620,8 +617,10 @@ const controlBlock: {
 const removeLinesEffect = function (removeLines: number[]) {
   let tempFields = fields.slice()
   if (DLEffect) {
-    gamePaused = true;
     gameEffecting = true;
+    lKeyPressed = false;
+    rKeyPressed = false;
+    dKeyPressed = false;
     window.clearTimeout(timeoutID);
     (async () => {
       for (let i = 0; i < blockNumWidth; i++) {
@@ -639,7 +638,6 @@ const removeLinesEffect = function (removeLines: number[]) {
       while (fields.length <= blockNumHeight) {
         fields.unshift(emptyLine.slice())
       }
-      gamePaused = false;
       drawGameField();
       gameEffecting = false;
       window.clearTimeout(timeoutID);
@@ -702,9 +700,6 @@ const drawGameField = function () {
 
 // 押しっぱなし左移動
 const moveLeft = function (isFirst = true) {
-  if (gamePaused){
-    lKeyPressed = false;
-  }
   if (lKeyPressed) {
     controlBlock.moveLeft();
         lTimeout = setTimeout(() => moveLeft(false), isFirst ? checkLongPress : sensitivity);
@@ -713,18 +708,12 @@ const moveLeft = function (isFirst = true) {
 
 // 押しっぱなし右移動
 const moveRight = function (isFirst = true) {
-  if (gamePaused){
-    rKeyPressed = false;
-  }
   if (rKeyPressed) {
     controlBlock.moveRight();
     rTimeout = setTimeout(() => moveRight(false), isFirst ? checkLongPress : sensitivity);
   }
 }
 const moveDown = function (isFirst = true) {
-  if (gamePaused){
-    dKeyPressed = false;
-  }
   if (dKeyPressed) {
     controlBlock.moveDown();
     dTimeout = setTimeout(() => moveDown(false), isFirst ? checkLongPress : sensitivity);
@@ -777,7 +766,7 @@ document.addEventListener("keyup", (e) => {
 document.addEventListener("keydown",(e) => {
 
   var keycode = getKeyCode(e);
-  if (!gameEnd && !gamePaused) {
+  if (!gameEnd && !gamePaused.value && !gameEffecting) {
     if (equalKeyCode(props.keyBinds.rotateR, keycode)) {        // ↑
       e.preventDefault();
       controlBlock.rotate(1);
@@ -820,19 +809,16 @@ document.addEventListener("keydown",(e) => {
 })
 
 const pauseControl = (e?: TouchEvent | MouseEvent) => {
-
   e?.preventDefault()
-  if(!gameEnd) emit("pauseButton")
+  if(!gameEnd) gamePaused.value = !gamePaused.value;
 }
 
 
-watch(() => props.pausing, (val)=>{
+watch(() => gamePaused.value, (val)=>{
   if(!val){
-    gamePaused = false;
     drawGameField();
     timeoutID = setTimeout(loopGame, speed);
   }else if(!gameEffecting){
-    gamePaused = true;
     lKeyPressed = false;
     rKeyPressed = false;
     dKeyPressed = false;
@@ -840,10 +826,15 @@ watch(() => props.pausing, (val)=>{
   }
 })
 
+watch(() => gameReset.value, (val)=>{
+  if(val && val >= 1)
+    resetGame()
+})
+
 const confirmResetGame = (e: TouchEvent | MouseEvent) => {
   e.preventDefault()
   if(confirm("本当にリセットしますか？")){
-    resetGame()
+    gameReset.value!++;
   }
 }
 
@@ -866,37 +857,37 @@ const touchEnd = (buttonID: "drop" | "left" | "right" | "down") =>  {
 }
 
 const touchStart = (e: TouchEvent, buttonID: "drop" | "left" | "right" | "down") => {
-    if (!gameEnd && !gamePaused) {
-  switch(buttonID){
-    case "drop":{
-      spacePressed = true;
-      e.preventDefault();
-      controlBlock.dropDown();
-      break;
+  if (!gameEnd && !gamePaused.value && !gameEffecting) {
+    switch(buttonID){
+      case "drop":{
+        spacePressed = true;
+        e.preventDefault();
+        controlBlock.dropDown();
+        break;
+      }
+      case 'left':{
+        e.preventDefault();
+        lKeyPressed = true;
+        moveLeft()
+        break;
+      }
+      case 'right':{
+        e.preventDefault()
+        rKeyPressed = true;
+        moveRight()
+        break;
+      }case 'down':{
+        e.preventDefault()
+        dKeyPressed = true;
+        moveDown()
+        break;
+      }
     }
-    case 'left':{
-      e.preventDefault();
-      lKeyPressed = true;
-      moveLeft()
-      break;
-    }
-    case 'right':{
-      e.preventDefault()
-      rKeyPressed = true;
-      moveRight()
-      break;
-    }case 'down':{
-    e.preventDefault()
-    dKeyPressed = true;
-    moveDown()
-    break;
   }
-}
-}
 }
 
 const clickButtons = (buttonID: "drop" | "down" | "left" | "right" | "rotateR" | "rotateL") => {
-  if (!gameEnd && !gamePaused) {
+  if (!gameEnd && !gamePaused.value && !gameEffecting) {
     switch(buttonID){
       case "drop":{
         controlBlock.dropDown();
@@ -935,18 +926,15 @@ const holdButtonClick = (holdID:number) => {
  */
 // ゲームループ
 const loopGame = function () {
-  if(props.pausing){
-    gamePaused = true;
+  if(gamePaused.value){
     gamePause(tfield.value?.getContext("2d")!);
   }else{
     if (!gameEnd) {
-      if (!gamePaused) {
-        controlBlock.moveDown();
-        if(!lockdownTimeoutID){
-          timeoutID = setTimeout(loopGame, speed);
-          removeLines();
-          drawGameField();
-        }
+      controlBlock.moveDown();
+      if(!lockdownTimeoutID){
+        timeoutID = setTimeout(loopGame, speed);
+        removeLines();
+        drawGameField();
       }
     } else {
       gameOver(tfield.value?.getContext("2d")!, score.value);

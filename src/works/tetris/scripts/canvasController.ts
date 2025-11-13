@@ -60,25 +60,25 @@ var genNextBlock = function(cnext:CanvasRenderingContext2D, posX:number, posY:nu
 export const drawNext = function(canvases: HTMLCanvasElement[], nextShape: number[], scale : (n: number) => number = () => 1) {
   for(let i = 0; i < canvases.length; i++){
     if(!canvases[i]) continue;
-  const canvas2d = canvases[i].getContext("2d")!
-  clearNext(canvas2d);
+    const canvas2d = canvases[i].getContext("2d")!
+    clearNext(canvas2d);
     if(nextShape[i] == -1 || nextShape[i] === undefined) continue
-    
-  
-  const centerXtemp = shapes[nextShape[i]]["shapes"][0].map(e => e[0])
-  const offsetW = (bigBlockBox - (Math.max(...centerXtemp) - Math.min(...centerXtemp) + 1) * blockSize) / 2;
+      
+    console.log(nextShape[i])
+    const centerXtemp = shapes[nextShape[i]]["shapes"][0].map(e => e[0])
+    const offsetW = (bigBlockBox - (Math.max(...centerXtemp) - Math.min(...centerXtemp) + 1) * blockSize) / 2;
 
     const centerYtemp = shapes[nextShape[i]]["shapes"][0].map(e => e[1])
-  const offsetH = (bigBlockBox - (Math.max(...centerYtemp) - Math.min(...centerYtemp) + 1) * blockSize) / 2;
-  for (let j=0; j<shapes[nextShape[i]]["shapes"][0].length; j++) {
-    genNextBlock(
-      canvas2d,
-      offsetW + (shapes[nextShape[i]]["shapes"][0][j][0] - Math.min(...centerXtemp)) * blockSize,
-      offsetH + (shapes[nextShape[i]]["shapes"][0][j][1] - Math.min(...centerYtemp)) * blockSize,
-      shapes[nextShape[i]]["color"],
-      scale(i)
-    );
-  }
+    const offsetH = (bigBlockBox - (Math.max(...centerYtemp) - Math.min(...centerYtemp) + 1) * blockSize) / 2;
+    for (let j=0; j<shapes[nextShape[i]]["shapes"][0].length; j++) {
+      genNextBlock(
+        canvas2d,
+        offsetW + (shapes[nextShape[i]]["shapes"][0][j][0] - Math.min(...centerXtemp)) * blockSize,
+        offsetH + (shapes[nextShape[i]]["shapes"][0][j][1] - Math.min(...centerYtemp)) * blockSize,
+        shapes[nextShape[i]]["color"],
+        scale(i)
+      );
+    }
   }
 }
 

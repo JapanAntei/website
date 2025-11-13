@@ -7,18 +7,12 @@ import { ref } from 'vue';
 
 
 const pausing = ref(false)
+const reset = ref<number>(0)
 
-function pause(){
-  pausing.value = !pausing.value
-}
-function resetPause(){
-  pausing.value = false;
-}
 
 const firstKeyBinds = {'down': 'S', 'left': 'A', 'right': 'D', 'drop': 'W', 'hold': ['X'], 'rotateR': 'E', 'rotateL': 'Q', pause:'F'}
-const firstKeyboardAlias = {'→': 'D', '←' : 'A', '↓': 'S', '↑': 'E', '_': 'W', 'V': 'X', '/': 'Q', '\\' : 'E', 'P': 'F'}
-// const secondKeyBinds = {'down': 'L', 'left': 'K', 'right': ';', 'drop': 'O', 'hold': [','], 'rotateR': 'P', 'rotateL': 'I', pause:'J'}
-
+ const firstKeyboardAlias = {'→': 'D', '←' : 'A', '↓': 'S', '↑': 'E', '_': 'W', 'V': 'X', '/': 'Q', '\\' : 'E', 'P': 'F'}
+//const secondKeyBinds = {'down': 'L', 'left': 'K', 'right': ';', 'drop': 'O', 'hold': [','], 'rotateR': 'P', 'rotateL': 'I', pause:'J'}
 
 </script>
 
@@ -31,10 +25,14 @@ const firstKeyboardAlias = {'→': 'D', '←' : 'A', '↓': 'S', '↑': 'E', '_'
       <Tetris :left="true" 
         :key-binds="firstKeyBinds"
         :keyboard-alias="firstKeyboardAlias"
-        @pause-button="pause" @reset-pause="resetPause" :pausing="pausing" />
+        v-model:pausing="pausing"
+        v-model:reset="reset"
+        />
       <!-- <Tetris :left="false" 
         :key-binds="secondKeyBinds"
-        @pause-button="pause" @reset-pause="resetPause" :pausing="pausing" /> <!-- -->
+        v-model:pausing="pausing"
+        v-model:reset="reset"
+        /> <!-- -->
     </div>
     <div style="display: flex;justify-content: center;">
       <TetrisSetting settting-id="GoMeTetrisSettings"></TetrisSetting>
