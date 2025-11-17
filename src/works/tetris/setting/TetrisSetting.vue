@@ -53,6 +53,7 @@ const saveSettings = () => {
         scoreDetails: scoreDetails.value?.checked,
         scoreDisplay: scoreDisplay.value?.checked,
     }))
+    alert("設定を保存しました")
 }
 
 const resetSettings = () => {

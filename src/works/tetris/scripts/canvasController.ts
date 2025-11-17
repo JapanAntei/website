@@ -64,7 +64,6 @@ export const drawNext = function(canvases: HTMLCanvasElement[], nextShape: numbe
     clearNext(canvas2d);
     if(nextShape[i] == -1 || nextShape[i] === undefined) continue
       
-    console.log(nextShape[i])
     const centerXtemp = shapes[nextShape[i]]["shapes"][0].map(e => e[0])
     const offsetW = (bigBlockBox - (Math.max(...centerXtemp) - Math.min(...centerXtemp) + 1) * blockSize) / 2;
 
