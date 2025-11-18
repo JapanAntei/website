@@ -167,7 +167,7 @@ let timeoutID: NodeJS.Timeout;
 let lockdownTimeoutID: NodeJS.Timeout;
 let scoreDisplayTimeoutID: NodeJS.Timeout;
 let scoreDisplaying = false;
-let scoreStructure: ScoreStructure = { score: 0, srs: 0, line:0, level: 0 }
+let scoreStructure: ScoreStructure = { score: 0, srs: 0, line:0, level: 0, allLine: false }
 
 // ゲームキャンバス初期化
 let tfield = ref<HTMLCanvasElement>();   // HTML側の canvas タグ
@@ -247,7 +247,7 @@ function resetGame() {
   //startupTouch();
   gameEnd = false;
   scoreDisplaying = false;
-  scoreStructure = { score: 0, srs: 0, line:0, level: 0 }
+  scoreStructure = { score: 0, srs: 0, line:0, level: 0, allLine: false }
   clearTimeout(timeoutID)
   loopGame();
 }
@@ -659,9 +659,17 @@ const removeLinesEffect = function (removeLines: number[]) {
 }
 const removeLines = function () {
   const deleteLines: number[] = []
+  let allLineDelete = true;
   checkLine: for (let i = 0; i < fields.length; i++) {
     for (const block of fields[i]) {
-      if (block == fieldColor || block == "black") continue checkLine;
+      if(block == fieldColor || block == "black"){
+        if(
+          allLineDelete && 
+          fields[i].filter((e) => (e != fieldColor && e != "black")).length !== 0
+        ) allLineDelete = false;
+        
+        continue checkLine;
+      }
     }
     deleteLines.push(i)
     linesRemoved.value++;
@@ -674,7 +682,7 @@ const removeLines = function () {
     }
 
     // 点数評価
-    const multiplier = 25 * (deleteLines.length ** 2) * srsMultiply;
+    const multiplier = 25 * (deleteLines.length ** 2) * srsMultiply * (allLineDelete ? 10 : 1);
     score.value += (multiplier * (level.value + 1));
     if(scoreDisplaySetting){
       clearTimeout(scoreDisplayTimeoutID!)
@@ -683,6 +691,7 @@ const removeLines = function () {
       scoreStructure.srs = srsMultiply
       scoreStructure.level = level.value
       scoreStructure.line = deleteLines.length
+      scoreStructure.allLine = allLineDelete
       scoreDisplay(tfield.value?.getContext("2d")!, scoreStructure)
       setTimeout(() => scoreDisplaying = false, 1000);
     }

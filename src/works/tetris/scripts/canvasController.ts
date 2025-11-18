@@ -6,6 +6,7 @@ export type ScoreStructure = {
   srs: number;
   line: number;
   level: number;
+  allLine: boolean;
 }
 
 // ブロック生成
@@ -121,18 +122,25 @@ export const scoreDisplay = function(cfield: CanvasRenderingContext2D, scoreStru
   cfield.closePath();
   cfield.fill();
   cfield.fillStyle = "#fa5300";
-  cfield.fillText(delineName[scoreStructure.line - 1], (fieldWidth/2), (fieldHeight/2- (scoreDetails ? 15 : 0)));
+  let scoreTitle = delineName[scoreStructure.line - 1]
+  if(scoreStructure.allLine){
+    cfield.fillText("All-Clear", (fieldWidth/2), (fieldHeight/2- (scoreDetails ? 20 : 5)));
+    cfield.font = "bold 14px Arial";
+    cfield.fillText(scoreTitle, (fieldWidth/2), (fieldHeight/2- (scoreDetails ? 5 : -10)));
+  } else {
+        cfield.fillText(scoreTitle, (fieldWidth/2), (fieldHeight/2- (scoreDetails ? 15 : 0)));
+  }
 
   if(scoreDetails){
     cfield.font = "12px Arial";
     cfield.fillStyle = "#f8f5c5";
-    cfield.fillText(`Score +${scoreStructure.score}`, (fieldWidth/2), (fieldHeight/2));
+    cfield.fillText(`Score +${scoreStructure.score}`, (fieldWidth/2), (fieldHeight/2 + 10));
     cfield.font = "12px Arial";
     cfield.fillStyle = "#f8f5c5";
     let scoreDetail = `Level: ${scoreStructure.level}`
     if(scoreStructure.srs >= 2) {
       scoreDetail += `, SRS: ${scoreStructure.srs - 1}`
     }
-    cfield.fillText(scoreDetail, (fieldWidth/2), (fieldHeight/2+ 15));
+    cfield.fillText(scoreDetail, (fieldWidth/2), (fieldHeight/2+ 25));
   }
 }
