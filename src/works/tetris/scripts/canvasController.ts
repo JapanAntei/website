@@ -1,11 +1,19 @@
 import { bigBlockBox, blockSize, fieldColor, fieldHeight, fieldWidth, scoreDetails} from "./globalData";
 import { shapes } from "./shapes";
 
+export enum SpinType{
+  None,
+  Mini,
+  Full
+}
+
 export type ScoreStructure = {
   score: number;
   srs: number;
   line: number;
   level: number;
+  allLine: boolean;
+  TSpined: SpinType;
 }
 
 // ブロック生成
@@ -110,24 +118,44 @@ export const gamePause = function(cfield: CanvasRenderingContext2D) {
   cfield.fillText("ポーズ中", (fieldWidth/2), (fieldHeight/2));
 }
 
+const delineName = ["Single", "Double", "Triple", "Tetris", "Pentagome"];
+
 export const scoreDisplay = function(cfield: CanvasRenderingContext2D, scoreStructure: ScoreStructure) {
-  cfield.font = "bold 16px Arial";
+  cfield.font = "bold 24px Arial";
   cfield.textAlign = "center";
   cfield.fillStyle = "rgba(0,0,0, 0.25)";
   cfield.beginPath();
-  cfield.rect(0, fieldHeight / 2 - 20, fieldWidth, 40);
+  cfield.rect(0, fieldHeight / 2 - 30, fieldWidth, 60);
   cfield.closePath();
   cfield.fill();
   cfield.fillStyle = "#fa5300";
-  cfield.fillText(`Score +${scoreStructure.score}`, (fieldWidth/2), (fieldHeight/2- (scoreDetails ? 5 : 0)));
+  let scoreTitle = delineName[scoreStructure.line - 1]
+  if(scoreStructure.allLine){
+    cfield.fillText("All-Clear", (fieldWidth/2), (fieldHeight/2- (scoreDetails ? 20 : 5)));
+    cfield.font = "bold 14px Arial";
+    cfield.fillText(scoreTitle, (fieldWidth/2), (fieldHeight/2- (scoreDetails ? 3 : -12)));
+  } else if (scoreStructure.TSpined === SpinType.Full){
+    cfield.fillText("T-Spin", (fieldWidth/2), (fieldHeight/2- (scoreDetails ? 20 : 5)));
+    cfield.font = "bold 14px Arial";
+    cfield.fillText(scoreTitle, (fieldWidth/2), (fieldHeight/2- (scoreDetails ? 3 : -12)));
+  } else if (scoreStructure.TSpined === SpinType.Mini){
+    cfield.fillText("T-Spin Mini", (fieldWidth/2), (fieldHeight/2- (scoreDetails ? 20 : 5)));
+    cfield.font = "bold 14px Arial";
+    cfield.fillText(scoreTitle, (fieldWidth/2), (fieldHeight/2- (scoreDetails ? 3 : -12)));
+  } else {
+    cfield.fillText(scoreTitle, (fieldWidth/2), (fieldHeight/2- (scoreDetails ? 15 : 0)));
+  }
 
   if(scoreDetails){
     cfield.font = "12px Arial";
     cfield.fillStyle = "#f8f5c5";
-    let scoreDetail = `Level: ${scoreStructure.level}, Lines: ${scoreStructure.line}`
+    cfield.fillText(`Score +${scoreStructure.score}`, (fieldWidth/2), (fieldHeight/2 + 10));
+    cfield.font = "12px Arial";
+    cfield.fillStyle = "#f8f5c5";
+    let scoreDetail = `Level: ${scoreStructure.level}`
     if(scoreStructure.srs >= 2) {
       scoreDetail += `, SRS: ${scoreStructure.srs - 1}`
     }
-    cfield.fillText(scoreDetail, (fieldWidth/2), (fieldHeight/2+ 10));
+    cfield.fillText(scoreDetail, (fieldWidth/2), (fieldHeight/2+ 25));
   }
 }
