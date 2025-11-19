@@ -715,7 +715,12 @@ const removeLines = function () {
     }
 
     // 点数評価
-    const multiplier = 25 * ((deleteLines.length * (TSpined ? 2 : 1)) ** 2) * srsMultiply * (allLineDelete ? 10 : 1);
+    const multiplier = 
+      25 * 
+      ((deleteLines.length * (TSpined === SpinType.Full ? 2 : 1)) ** 2) *
+      srsMultiply *
+      (allLineDelete ? 10 : 1) *
+      (TSpined === SpinType.Mini ? 2 : 1);
     score.value += (multiplier * (level.value + 1));
     if(scoreDisplaySetting){
       clearTimeout(scoreDisplayTimeoutID!)
