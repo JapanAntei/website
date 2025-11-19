@@ -27,7 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-import { gameOver, gamePause, drawNext, genBlock, genStrokedBlock, scoreDisplay, type ScoreStructure } from './canvasController';
+import { gameOver, gamePause, drawNext, genBlock, genStrokedBlock, scoreDisplay, type ScoreStructure, SpinType } from './canvasController';
 import { bigBlockBox, blockNumHeight, blockNumWidth, blockSize, DLEffect, fieldColor, fieldHeight, fieldWidth, holdNum, nextNum, smallBlockBox, startingShapes, dropShapes, getSettingObj, type shape, type shapeData, randomType, rotateSystem, ghost, lockdownSystem, scoreDisplay as scoreDisplaySetting} from './globalData';
 import { ref, onMounted,/*, onBeforeUpdate*/ 
 watch,
@@ -139,6 +139,8 @@ let fourLineRmoved = ref(0);
 
 let srsMultiply = 1;
 
+let TSpined: SpinType = SpinType.None;
+
 
 
 /*
@@ -167,7 +169,7 @@ let timeoutID: NodeJS.Timeout;
 let lockdownTimeoutID: NodeJS.Timeout;
 let scoreDisplayTimeoutID: NodeJS.Timeout;
 let scoreDisplaying = false;
-let scoreStructure: ScoreStructure = { score: 0, srs: 0, line:0, level: 0, allLine: false }
+let scoreStructure: ScoreStructure = { score: 0, srs: 0, line:0, level: 0, allLine: false, TSpined: SpinType.None }
 
 // ゲームキャンバス初期化
 let tfield = ref<HTMLCanvasElement>();   // HTML側の canvas タグ
@@ -247,7 +249,7 @@ function resetGame() {
   //startupTouch();
   gameEnd = false;
   scoreDisplaying = false;
-  scoreStructure = { score: 0, srs: 0, line:0, level: 0, allLine: false }
+  scoreStructure = { score: 0, srs: 0, line:0, level: 0, allLine: false, TSpined: SpinType.None }
   clearTimeout(timeoutID)
   loopGame();
 }
@@ -329,11 +331,11 @@ const controlBlock: {
     controlBlock.rotateType = controlBlock.shape.rotateType ?? 0;
     controlBlock.lowestBlock = -Infinity;
     blocksDropped.value += 1;
-    srsMultiply = 1;
     randomBlocks()
     held = held.map(_ => false)
     lockdownCount = 0;
     drawNext(nextFields.value, nextShape, (n) => n == 0 ? 1 : 0.5)
+    removeLines()
     if(lockdownTimeoutID){
       clearTimeout(lockdownTimeoutID)
       lockdownTimeoutID = 0 as unknown as NodeJS.Timeout;
@@ -358,71 +360,98 @@ const controlBlock: {
         return true
       }
     }
-    if (rotating(0, 0)) {
+    const TspinCheck = (withoutMini = false) => {
+      if(controlBlock.shapeID === 6){
+        const TSpinCheckArr = [
+          controlBlock.collision(-1, -1, [[0,0]]),
+          controlBlock.collision(1, -1, [[0,0]]),
+          controlBlock.collision(1, 1, [[0,0]]),
+          controlBlock.collision(-1, 1, [[0,0]]),
+        ];
+        if(TSpinCheckArr.filter(e => e).length >= 3){
+          if(withoutMini || (
+            TSpinCheckArr[controlBlock.rot] && 
+            TSpinCheckArr[(controlBlock.rot + 1) & 3]
+          )){
+            TSpined = SpinType.Full
+          } else {
+            TSpined = SpinType.Mini
+          }
+        }else {
+          TSpined = SpinType.None
+        }
+        
+      }
+    }
+    const srsFunc = (withoutMini = false) => {
+      srsMultiply++;
+      TspinCheck(withoutMini)
+    }
+    if (rotating(0, 0, TspinCheck)) {
     } else {
       if(rotateSystem){
         if(controlBlock.rotateType === 0){
           if(new_rot === 0){
-            if(rotating(controlBlock.rot === 1 ? 1 : -1, 0, () => srsMultiply++)) {}
-            else if (rotating(controlBlock.rot === 1 ? 1 : -1, 1, () => srsMultiply++)) {}
-            else if (rotating(0, -2, () => srsMultiply++)) {}
-            else if (rotating(controlBlock.rot === 1 ? 1 : -1, -2, () => srsMultiply++)) {}
+            if(rotating(controlBlock.rot === 1 ? 1 : -1, 0, srsFunc)) {}
+            else if (rotating(controlBlock.rot === 1 ? 1 : -1, 1, srsFunc)) {}
+            else if (rotating(0, -2, srsFunc)) {}
+            else if (rotating(controlBlock.rot === 1 ? 1 : -1, -2, () => srsFunc(true))) {}
           } else if(new_rot === 1){
-            if(rotating(-1, 0, () => srsMultiply++)) {}
-            else if (rotating(-1, -1, () => srsMultiply++)) {}
-            else if (rotating(0, 2, () => srsMultiply++)) {}
-            else if (rotating(-1, 2, () => srsMultiply++)) {}
+            if(rotating(-1, 0, srsFunc)) {}
+            else if (rotating(-1, -1, srsFunc)) {}
+            else if (rotating(0, 2, srsFunc)) {}
+            else if (rotating(-1, 2, () => srsFunc(true))) {}
           } else if(new_rot === 2){
-            if(rotating(controlBlock.rot === 1 ? 1 : -1, 0, () => srsMultiply++)) {}
-            else if (rotating(controlBlock.rot === 1 ? 1 : -1, -1, () => srsMultiply++)) {}
-            else if (rotating(0, -2, () => srsMultiply++)) {}
-            else if (rotating(controlBlock.rot === 1 ? 1 : -1, -2, () => srsMultiply++)) {}
+            if(rotating(controlBlock.rot === 1 ? 1 : -1, 0, srsFunc)) {}
+            else if (rotating(controlBlock.rot === 1 ? 1 : -1, -1, srsFunc)) {}
+            else if (rotating(0, -2, srsFunc)) {}
+            else if (rotating(controlBlock.rot === 1 ? 1 : -1, -2, () => srsFunc(true))) {}
           } else if(new_rot === 3){
-            if(rotating(1, 0, () => srsMultiply++)) {}
-            else if (rotating(1, -1, () => srsMultiply++)) {}
-            else if (rotating(0, 2, () => srsMultiply++)) {}
-            else if (rotating(1, 2, () => srsMultiply++)) {}
+            if(rotating(1, 0, srsFunc)) {}
+            else if (rotating(1, -1, srsFunc)) {}
+            else if (rotating(0, 2, srsFunc)) {}
+            else if (rotating(1, 2, () => srsFunc(true))) {}
           }
         } else if(controlBlock.rotateType === 1){
           if(new_rot === 0){
-            if(rotating(-2 * rotateDirection,0, () => srsMultiply++)){}
-            else if(rotating(rotateDirection,0, () => srsMultiply++)){}
-            else if(controlBlock.rot == 1 && rotating(2,-1, () => srsMultiply++)){}
-            else if(controlBlock.rot == 3 && rotating(1,2, () => srsMultiply++)){}
-            else if(controlBlock.rot == 1 && rotating(-1,2, () => srsMultiply++)){}
-            else if(controlBlock.rot == 3 && rotating(-2,-1, () => srsMultiply++)){}
+            if(rotating(-2 * rotateDirection,0, srsFunc)){}
+            else if(rotating(rotateDirection,0, srsFunc)){}
+            else if(controlBlock.rot == 1 && rotating(2,-1, srsFunc)){}
+            else if(controlBlock.rot == 3 && rotating(1,2, srsFunc)){}
+            else if(controlBlock.rot == 1 && rotating(-1,2, () => srsFunc(true))){}
+            else if(controlBlock.rot == 3 && rotating(-2,-1, () => srsFunc(true))){}
           } else if(new_rot === 1){
-            if(controlBlock.rot == 0 && rotating(-2,0, () => srsMultiply++)){}
-            else if(controlBlock.rot == 2 && rotating(1,0, () => srsMultiply++)){}
-            else if(controlBlock.rot == 0 && rotating(1,0, () => srsMultiply++)){}
-            else if(controlBlock.rot == 2 && rotating(-2,0, () => srsMultiply++)){}
-            else if(controlBlock.rot == 0 && rotating(-2,1, () => srsMultiply++)){}
-            else if(controlBlock.rot == 2 && rotating(1,2, () => srsMultiply++)){}
-            else if(controlBlock.rot == 0 && rotating(1,-2, () => srsMultiply++)){}
-            else if(controlBlock.rot == 2 && rotating(-2,-1, () => srsMultiply++)){}
+            if(controlBlock.rot == 0 && rotating(-2,0, srsFunc)){}
+            else if(controlBlock.rot == 2 && rotating(1,0, srsFunc)){}
+            else if(controlBlock.rot == 0 && rotating(1,0, srsFunc)){}
+            else if(controlBlock.rot == 2 && rotating(-2,0, srsFunc)){}
+            else if(controlBlock.rot == 0 && rotating(-2,1, srsFunc)){}
+            else if(controlBlock.rot == 2 && rotating(1,2, srsFunc)){}
+            else if(controlBlock.rot == 0 && rotating(1,-2, () => srsFunc(true))){}
+            else if(controlBlock.rot == 2 && rotating(-2,-1, () => srsFunc(true))){}
           } else if(new_rot === 2){
-            if(rotating(-rotateDirection,0, () => srsMultiply++)){}
-            else if(rotating(2 * rotateDirection,0, () => srsMultiply++)){}
-            else if(controlBlock.rot == 1 && rotating(-1,-2, () => srsMultiply++)){}
-            else if(controlBlock.rot == 3 && rotating(-2,1, () => srsMultiply++)){}
-            else if(controlBlock.rot == 1 && rotating(2,1, () => srsMultiply++)){}
-            else if(controlBlock.rot == 3 && rotating(1,-2, () => srsMultiply++)){}
+            if(rotating(-rotateDirection,0, srsFunc)){}
+            else if(rotating(2 * rotateDirection,0, srsFunc)){}
+            else if(controlBlock.rot == 1 && rotating(-1,-2, srsFunc)){}
+            else if(controlBlock.rot == 3 && rotating(-2,1, srsFunc)){}
+            else if(controlBlock.rot == 1 && rotating(2,1, () => srsFunc(true))){}
+            else if(controlBlock.rot == 3 && rotating(1,-2, () => srsFunc(true))){}
           } else if(new_rot === 3){
-            if(controlBlock.rot == 0 && rotating(-1,0, () => srsMultiply++)){}
-            else if(controlBlock.rot == 2 && rotating(2,0, () => srsMultiply++)){}
-            else if(controlBlock.rot == 0 && rotating(2,0, () => srsMultiply++)){}
-            else if(controlBlock.rot == 2 && rotating(-1,0, () => srsMultiply++)){}
-            else if(controlBlock.rot == 0 && rotating(-1,-2, () => srsMultiply++)){}
-            else if(controlBlock.rot == 2 && rotating(2,-1, () => srsMultiply++)){}
-            else if(controlBlock.rot == 0 && rotating(2,1, () => srsMultiply++)){}
-            else if(controlBlock.rot == 2 && rotating(-1,2, () => srsMultiply++)){}
+            if(controlBlock.rot == 0 && rotating(-1,0, srsFunc)){}
+            else if(controlBlock.rot == 2 && rotating(2,0, srsFunc)){}
+            else if(controlBlock.rot == 0 && rotating(2,0, srsFunc)){}
+            else if(controlBlock.rot == 2 && rotating(-1,0, srsFunc)){}
+            else if(controlBlock.rot == 0 && rotating(-1,-2, srsFunc)){}
+            else if(controlBlock.rot == 2 && rotating(2,-1, srsFunc)){}
+            else if(controlBlock.rot == 0 && rotating(2,1, () => srsFunc(true))){}
+            else if(controlBlock.rot == 2 && rotating(-1,2, () => srsFunc(true))){}
           }
         }
       } else {
-        if (rotating(rotateDirection, 0)) {}
-        else if (rotating(-rotateDirection, 0)) {}
-        else if (rotating(2 * rotateDirection, 0)) {}
-        else if (rotating(-2 * rotateDirection, 0)) {}
+        if (rotating(rotateDirection, 0, TspinCheck)) {}
+        else if (rotating(-rotateDirection, 0, TspinCheck)) {}
+        else if (rotating(2 * rotateDirection, 0, TspinCheck)) {}
+        else if (rotating(-2 * rotateDirection, 0, TspinCheck)) {}
       }
     }
   },
@@ -452,6 +481,7 @@ const controlBlock: {
     controlBlock.Y++;
     controlBlock.checkLockdown(false)
     srsMultiply = 1;
+    TSpined = SpinType.None;
     drawGameField();
   },
 
@@ -475,6 +505,7 @@ const controlBlock: {
   moveLeft: () => {
     if (!controlBlock.collision(-1, 0)) {
       controlBlock.X--;
+      TSpined = SpinType.None;
       controlBlock.checkLockdown();
       drawGameField();
     }
@@ -484,6 +515,7 @@ const controlBlock: {
   moveRight: () => {
     if (!controlBlock.collision( 1, 0)) {
       controlBlock.X++;
+      TSpined = SpinType.None;
       controlBlock.checkLockdown();
       drawGameField();
     }
@@ -543,6 +575,7 @@ const controlBlock: {
         loopGame()
       }
       srsMultiply = 1;
+      TSpined = SpinType.None;
       held[key] = true
       drawGameField();
     }
@@ -682,7 +715,7 @@ const removeLines = function () {
     }
 
     // 点数評価
-    const multiplier = 25 * (deleteLines.length ** 2) * srsMultiply * (allLineDelete ? 10 : 1);
+    const multiplier = 25 * ((deleteLines.length * (TSpined ? 2 : 1)) ** 2) * srsMultiply * (allLineDelete ? 10 : 1);
     score.value += (multiplier * (level.value + 1));
     if(scoreDisplaySetting){
       clearTimeout(scoreDisplayTimeoutID!)
@@ -692,11 +725,14 @@ const removeLines = function () {
       scoreStructure.level = level.value
       scoreStructure.line = deleteLines.length
       scoreStructure.allLine = allLineDelete
+      scoreStructure.TSpined = TSpined
       scoreDisplay(tfield.value?.getContext("2d")!, scoreStructure)
       setTimeout(() => scoreDisplaying = false, 1000);
     }
     removeLinesEffect(deleteLines)
   }
+  srsMultiply = 1;
+  TSpined = SpinType.None;
 }
 
 
