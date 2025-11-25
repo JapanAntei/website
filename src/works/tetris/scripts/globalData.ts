@@ -3,6 +3,7 @@ export type shapeData = {
     shapes: [shape, shape, shape, shape];
     color: string;
     rotateType?: number;
+    shapeName?: string;
 };
 export type shapesData = shapeData[];
 

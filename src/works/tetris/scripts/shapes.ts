@@ -303,11 +303,13 @@ export const shapes: shapesData = [
             ],
         ],
         color: "#705090",
+        shapeName: "T",
     },
     // ■
     {
         shapes: [[[0, 0]], [[0, -1]], [[-1, -1]], [[-1, 0]]],
         color: "#DD03A4",
+        shapeName: "Dot"
     },
     // ■■
     {

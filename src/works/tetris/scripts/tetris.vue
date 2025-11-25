@@ -169,7 +169,8 @@ let timeoutID: NodeJS.Timeout;
 let lockdownTimeoutID: NodeJS.Timeout;
 let scoreDisplayTimeoutID: NodeJS.Timeout;
 let scoreDisplaying = false;
-let scoreStructure: ScoreStructure = { score: 0, srs: 0, line:0, level: 0, allLine: false, TSpined: SpinType.None }
+let scoreStructure: ScoreStructure = { score: 0, srs: 0, line:0, level: 0, allLine: false, TSpined: SpinType.None, shape: 0, }
+let spinShape = 0;
 
 // ゲームキャンバス初期化
 let tfield = ref<HTMLCanvasElement>();   // HTML側の canvas タグ
@@ -249,7 +250,7 @@ function resetGame() {
   //startupTouch();
   gameEnd = false;
   scoreDisplaying = false;
-  scoreStructure = { score: 0, srs: 0, line:0, level: 0, allLine: false, TSpined: SpinType.None }
+  scoreStructure = { score: 0, srs: 0, line:0, level: 0, allLine: false, TSpined: SpinType.None, shape: 0 }
   clearTimeout(timeoutID)
   loopGame();
 }
@@ -374,13 +375,29 @@ const controlBlock: {
             TSpinCheckArr[(controlBlock.rot + 1) & 3]
           )){
             TSpined = SpinType.Full
+            spinShape = 6;
           } else {
             TSpined = SpinType.Mini
+            spinShape = 6;
           }
         }else {
           TSpined = SpinType.None
+          spinShape = 0;
         }
         
+      } else if (controlBlock.shapeID === 7){
+        if(controlBlock.collision(0,0,[[1,0],[-1,0],[0,1],[0,-1]])){
+          if(controlBlock.collision(0,0,[[1,1],[1,-1],[-1,-1],[-1,1]])){
+            TSpined = SpinType.Full
+            spinShape = 7;
+          } else {
+            TSpined = SpinType.Mini
+            spinShape = 7;
+          }
+        }else{
+          TSpined = SpinType.None
+          spinShape = 0;
+        }
       }
     }
     const srsFunc = (withoutMini = false) => {
@@ -731,6 +748,7 @@ const removeLines = function () {
       scoreStructure.line = deleteLines.length
       scoreStructure.allLine = allLineDelete
       scoreStructure.TSpined = TSpined
+      scoreStructure.shape = spinShape;
       scoreDisplay(tfield.value?.getContext("2d")!, scoreStructure)
       setTimeout(() => scoreDisplaying = false, 1000);
     }

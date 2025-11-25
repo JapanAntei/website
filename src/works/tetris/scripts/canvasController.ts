@@ -14,6 +14,7 @@ export type ScoreStructure = {
   level: number;
   allLine: boolean;
   TSpined: SpinType;
+  shape: number;
 }
 
 // ブロック生成
@@ -135,11 +136,11 @@ export const scoreDisplay = function(cfield: CanvasRenderingContext2D, scoreStru
     cfield.font = "bold 14px Arial";
     cfield.fillText(scoreTitle, (fieldWidth/2), (fieldHeight/2- (scoreDetails ? 3 : -12)));
   } else if (scoreStructure.TSpined === SpinType.Full){
-    cfield.fillText("T-Spin", (fieldWidth/2), (fieldHeight/2- (scoreDetails ? 20 : 5)));
+    cfield.fillText(`${shapes[scoreStructure.shape].shapeName}-Spin`, (fieldWidth/2), (fieldHeight/2- (scoreDetails ? 20 : 5)));
     cfield.font = "bold 14px Arial";
     cfield.fillText(scoreTitle, (fieldWidth/2), (fieldHeight/2- (scoreDetails ? 3 : -12)));
   } else if (scoreStructure.TSpined === SpinType.Mini){
-    cfield.fillText("T-Spin Mini", (fieldWidth/2), (fieldHeight/2- (scoreDetails ? 20 : 5)));
+    cfield.fillText(`${shapes[scoreStructure.shape].shapeName}-Spin Mini`, (fieldWidth/2), (fieldHeight/2- (scoreDetails ? 20 : 5)));
     cfield.font = "bold 14px Arial";
     cfield.fillText(scoreTitle, (fieldWidth/2), (fieldHeight/2- (scoreDetails ? 3 : -12)));
   } else {
