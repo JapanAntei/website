@@ -28,7 +28,33 @@ THE SOFTWARE.
 */
 
 import { gameOver, gamePause, drawNext, genBlock, genStrokedBlock, scoreDisplay, type ScoreStructure, SpinType } from './canvasController';
-import { bigBlockBox, blockNumHeight, blockNumWidth, blockSize, DLEffect, fieldColor, fieldHeight, fieldWidth, holdNum, nextNum, smallBlockBox, startingShapes, dropShapes, getSettingObj, type shape, type shapeData, randomType, rotateSystem, ghost, lockdownSystem, scoreDisplay as scoreDisplaySetting} from './globalData';
+import { 
+  bigBlockBox,
+  blockNumHeight,
+  blockNumWidth,
+  blockSize,
+  DLEffect,
+  fieldColor,
+  fieldHeight,
+  fieldWidth,
+  holdNum,
+  nextNum,
+  smallBlockBox,
+  startingShapes,
+  dropShapes,
+  getSettingObj,
+  type shape,
+  type shapeData,
+  randomType,
+  rotateSystem,
+  ghost,
+  lockdownSystem,
+  scoreDisplay as scoreDisplaySetting,
+  keyCode,
+  type keys,
+  type keyboardAlias,
+  type KeyBinds
+} from './globalData';
 import { ref, onMounted,/*, onBeforeUpdate*/ 
 watch,
 } from 'vue';
@@ -39,75 +65,13 @@ import { shapes } from './shapes';
  */
 // 初期化
 
-const keyCode = {
-  32: "_",
-  37: "←",
-  38: "↑",
-  39: "→",
-  40: "↓",
-  48: "0",
-  49: "1",
-  50: "2",
-  51: "3",
-  52: "4",
-  53: "5",
-  54: "6",
-  55: "7",
-  56: "8",
-  57: "9",
-  59: ";",
-  65: "A",
-  66: "B",
-  67: "C",
-  68: "D",
-  69: "E",
-  70: "F",
-  71: "G",
-  72: "H",
-  73: "I",
-  74: "J",
-  75: "K",
-  76: "L",
-  77: "M",
-  78: "N",
-  79: "O",
-  80: "P",
-  81: "Q",
-  82: "R",
-  83: "S",
-  84: "T",
-  85: "U",
-  86: "V",
-  87: "W",
-  88: "X",
-  89: "Y",
-  90: "Z",
-  188: ",",
-  189: ".",
-  191: "/",
-  220: "\\"
-}
-
-interface KeyBinds{
-  drop: string;
-  down:string;
-  left:string;
-  right:string;
-  rotateR: string;
-  rotateL: string;
-  hold: string[];
-  pause: string;
-}
 
 interface Props{
   left: boolean;
   keyBinds?: KeyBinds;
-  keyboardAlias?: KeyboardAlias;
+  keyboardAlias?: keyboardAlias;
 }
 
-interface KeyboardAlias{
-  [k : string]: string;
-}
 
 const props = withDefaults(defineProps<Props>(),
   {
@@ -119,10 +83,10 @@ const props = withDefaults(defineProps<Props>(),
       right: "←",
       rotateR:"\\",
       rotateL:"/",
-      hold:["v"],
+      hold:["V"],
       pause:"F"
     }),
-    keyboardAlias: (): KeyboardAlias => ({}),
+    keyboardAlias: (): keyboardAlias => ({}),
   }
 )
 
@@ -805,7 +769,7 @@ var getKeyCode = function(e : KeyboardEvent): number {
   return code;
 }
 
-const getKeyAlias = function(baseKey: string): string{
+const getKeyAlias = function(baseKey: keys): keys{
   if(props.keyboardAlias[baseKey]) return getKeyAlias(props.keyboardAlias[baseKey])
   else return baseKey;
 }

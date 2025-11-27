@@ -4,16 +4,18 @@ import NAFooter from '@shared/components/NAFooter.vue';
 import Tetris from './scripts/tetris.vue';
 import TetrisSetting from './setting/TetrisSetting.vue';
 import { ref } from 'vue';
+import type { KeyBinds, keyboardAlias } from './scripts/globalData';
 
 
 const pausing = ref(false)
 const reset = ref<number>(0)
 
 
-const firstKeyBinds = {'down': 'S', 'left': 'A', 'right': 'D', 'drop': 'W', 'hold': ['X'], 'rotateR': 'E', 'rotateL': 'Q', pause:'F'}
- const firstKeyboardAlias = {'→': 'D', '←' : 'A', '↓': 'S', '↑': 'E', '_': 'W', 'V': 'X', '/': 'Q', '\\' : 'E', 'P': 'F'}
+const firstKeyBinds = ref<KeyBinds>({'down': 'S', 'left': 'A', 'right': 'D', 'drop': 'W', 'hold': ['X'], 'rotateR': 'E', 'rotateL': 'Q', pause:'F'})
+ const firstKeyboardAlias = ref<keyboardAlias>({'→': 'D', '←' : 'A', '↓': 'S', '↑': 'E', '_': 'W', 'V': 'X', '/': 'Q', '\\' : 'E', 'P': 'F'})
 //const secondKeyBinds = {'down': 'L', 'left': 'K', 'right': ';', 'drop': 'O', 'hold': [','], 'rotateR': 'P', 'rotateL': 'I', pause:'J'}
 
+//window.setTimeout(() => firstKeyboardAlias.value["B"] = "F", 5000)
 </script>
 
 <template>
