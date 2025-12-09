@@ -5,17 +5,20 @@ import Tetris from './scripts/tetris.vue';
 import TetrisSetting from './setting/TetrisSetting.vue';
 import { ref } from 'vue';
 import type { KeyBinds, keyboardAlias } from './scripts/globalData';
+import KeybindSetting from './setting/keybindSetting.vue';
 
+const SettingID = "GoMeTetris"
 
 const pausing = ref(false)
 const reset = ref<number>(0)
 
 
 const firstKeyBinds = ref<KeyBinds>({'down': 'S', 'left': 'A', 'right': 'D', 'drop': 'W', 'hold': ['X'], 'rotateR': 'E', 'rotateL': 'Q', pause:'F'})
- const firstKeyboardAlias = ref<keyboardAlias>({'→': 'D', '←' : 'A', '↓': 'S', '↑': 'E', '_': 'W', 'V': 'X', '/': 'Q', '\\' : 'E', 'P': 'F'})
-//const secondKeyBinds = {'down': 'L', 'left': 'K', 'right': ';', 'drop': 'O', 'hold': [','], 'rotateR': 'P', 'rotateL': 'I', pause:'J'}
+const firstKeyboardAlias = ref<keyboardAlias>({'→': 'D', '←' : 'A', '↓': 'S', '↑': 'E', '_': 'W', 'V': 'X', '/': 'Q', '\\' : 'E', 'P': 'F'})
+const secondKeyBinds = ref<KeyBinds>({'down': 'L', 'left': 'K', 'right': ';', 'drop': 'O', 'hold': [','], 'rotateR': 'P', 'rotateL': 'I', pause:'J'})
 
-//window.setTimeout(() => firstKeyboardAlias.value["B"] = "F", 5000)
+//window.setTimeout(() => firstKeyBinds.value.down = "F", 5000)
+
 </script>
 
 <template>
@@ -29,15 +32,28 @@ const firstKeyBinds = ref<KeyBinds>({'down': 'S', 'left': 'A', 'right': 'D', 'dr
         :keyboard-alias="firstKeyboardAlias"
         v-model:pausing="pausing"
         v-model:reset="reset"
+        :settting-id="SettingID"
         />
       <!-- <Tetris :left="false" 
         :key-binds="secondKeyBinds"
+        :keyboard-alias="firstKeyboardAlias"
         v-model:pausing="pausing"
         v-model:reset="reset"
+        :settting-id="SettingID"
         /> <!-- -->
     </div>
     <div style="display: flex;justify-content: center;">
-      <TetrisSetting settting-id="GoMeTetrisSettings"></TetrisSetting>
+      <TetrisSetting :settting-id="SettingID"></TetrisSetting>
+    </div>
+    <div style="display: flex;justify-content: center;">
+      <KeybindSetting
+        :second-player="false"
+        v-model:keybind-first="firstKeyBinds"
+        v-model:keybind-second="secondKeyBinds"
+        :reset="reset"
+        v-model:keyboard-alias="firstKeyboardAlias"
+        :settting-id="SettingID"
+      ></KeybindSetting>
     </div>
     <div style="display: flex;justify-content: center;">
       <details id="TetrisDetails">
@@ -72,6 +88,8 @@ const firstKeyBinds = ref<KeyBinds>({'down': 'S', 'left': 'A', 'right': 'D', 'dr
     border: red solid 2px;
     border-radius: 5px;
     width: 80vw;
+}
+details{
     margin-top:20px;
 }
 </style>

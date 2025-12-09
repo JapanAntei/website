@@ -55,9 +55,7 @@ import {
   type keyboardAlias,
   type KeyBinds
 } from './globalData';
-import { ref, onMounted,/*, onBeforeUpdate*/ 
-watch,
-} from 'vue';
+import { ref, onMounted, watch,} from 'vue';
 import { shapes } from './shapes';
 
 /*
@@ -70,6 +68,7 @@ interface Props{
   left: boolean;
   keyBinds?: KeyBinds;
   keyboardAlias?: keyboardAlias;
+  setttingId: string,
 }
 
 
@@ -177,7 +176,7 @@ function resetGame() {
     gamePaused.value = false;
   }
   clearTimeout(timeoutID)
-  getSettingObj()
+  getSettingObj(props.setttingId)
     holdFields.value = holdFields.value.filter((e) => e.parentElement?.parentElement)
     nextFields.value = nextFields.value.filter((e) => e.parentElement?.parentElement)
   let isFirst = true;
@@ -756,26 +755,14 @@ const moveDown = function (isFirst = true) {
     dTimeout = setTimeout(() => moveDown(false), isFirst ? checkLongPress : sensitivity);
   }
 }
-// キー取得
-var getKeyCode = function(e : KeyboardEvent): number {
-  var code;
-  if (window.event) {  // IE
-    code = e.keyCode;
-  } else if(e.which) { // Netscape/Firefox/Opera
-    code = e.which;
-  }else {
-    code = -1
-  }
-  return code;
-}
 
 const getKeyAlias = function(baseKey: keys): keys{
   if(props.keyboardAlias[baseKey]) return getKeyAlias(props.keyboardAlias[baseKey])
   else return baseKey;
 }
 
-const equalKeyCode = function(bindedKey: string, enteredKeyCode:number){
-  return bindedKey === getKeyAlias(keyCode[enteredKeyCode as 32])
+const equalKeyCode = function(bindedKey: string, enteredKeyCode:string){
+  return bindedKey === getKeyAlias(keyCode[enteredKeyCode as "Space"])
 }
 
 /*
@@ -784,7 +771,7 @@ const equalKeyCode = function(bindedKey: string, enteredKeyCode:number){
 // キーアップイベント初期化(押しっ放し対応)
 document.addEventListener("keyup", (e) => {
 
-  var keycode = getKeyCode(e);
+  var keycode = e.code;
   if (equalKeyCode(props.keyBinds.drop, keycode)) {          // space
     spacePressed = false;
   } else if (equalKeyCode(props.keyBinds.left, keycode)) {   // ←
@@ -802,7 +789,7 @@ document.addEventListener("keyup", (e) => {
 // キーダウンイベント初期化
 document.addEventListener("keydown",(e) => {
 
-  var keycode = getKeyCode(e);
+  var keycode = e.code;
   if (!gameEnd && !gamePaused.value && !gameEffecting) {
     if (equalKeyCode(props.keyBinds.rotateR, keycode)) {        // ↑
       e.preventDefault();
@@ -826,9 +813,9 @@ document.addEventListener("keydown",(e) => {
       e.preventDefault();
       controlBlock.dropDown();
     }
-     else if (props.keyBinds.hold.includes( getKeyAlias(keyCode[keycode as 32]))) { // ↓
+     else if (props.keyBinds.hold.includes( getKeyAlias(keyCode[keycode as "Space"]))) { // ↓
       e.preventDefault();
-      controlBlock.hold(props.keyBinds.hold.indexOf( getKeyAlias(keyCode[keycode as 32])));
+      controlBlock.hold(props.keyBinds.hold.indexOf( getKeyAlias(keyCode[keycode as "Space"])));
 
     }
      else if (equalKeyCode(props.keyBinds.rotateL, keycode)) { // ↓

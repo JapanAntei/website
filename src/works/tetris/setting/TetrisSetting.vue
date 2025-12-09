@@ -186,14 +186,14 @@ const normalGoMeTetrisSettings = () => {
           <div v-for="i in shapes.length" :key="`next${i-1}`" class="shapesSettingBox">
             <canvas class="holdCanvas" :ref="setShapeFieldRef"></canvas>
             <div style="text-align: left; margin-left: 10px;">
-            <div style="vertical-align: top">
-                <input type="checkbox" class="startingShape" :id="`startingShape${i-1}`" :data-shape-number="i-1" :checked="settings.startingShapes.includes(i-1)">
-                <label :for="`startingShape${i-1}`" style="display: inline-block;">最初のミノ抽選の候補に入れる</label>
-            </div>
-            <div style="vertical-align: top">
-                <input type="checkbox" class="randomShape" :id="`randomShape${i-1}`" :data-shape-number="i-1" :checked="settings.dropShapes.includes(i-1)">
-                <label :for="`randomShape${i-1}`" style="display: inline-block;">ミノ抽選候補に入れる</label>
-            </div>
+                <div style="vertical-align: top">
+                    <input type="checkbox" class="startingShape" :id="`startingShape${i-1}`" :data-shape-number="i-1" :checked="settings.startingShapes.includes(i-1)">
+                    <label :for="`startingShape${i-1}`" style="display: inline-block;">最初のミノ抽選の候補に入れる</label>
+                </div>
+                <div style="vertical-align: top">
+                    <input type="checkbox" class="randomShape" :id="`randomShape${i-1}`" :data-shape-number="i-1" :checked="settings.dropShapes.includes(i-1)">
+                    <label :for="`randomShape${i-1}`" style="display: inline-block;">ミノ抽選候補に入れる</label>
+                </div>
             </div>
           </div>
         </div>
