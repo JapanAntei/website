@@ -5,17 +5,20 @@ import Tetris from './scripts/tetris.vue';
 import TetrisSetting from './setting/TetrisSetting.vue';
 import { ref } from 'vue';
 import type { KeyBinds, keyboardAlias } from './scripts/globalData';
-import KeybindSetting from './setting/keybindSetting.vue';
+import KeybindSetting from './setting/KeybindSetting.vue';
 
 const SettingID = "GoMeTetris"
 
 const pausing = ref(false)
 const reset = ref<number>(0)
 
+const defaultKeybindFirst: KeyBinds = {'down': 'S', 'left': 'A', 'right': 'D', 'drop': 'W', 'hold': ['X'], 'rotateR': 'E', 'rotateL': 'Q', pause:'F'}
+const defaultKeybindSecond: KeyBinds = {'down': 'L', 'left': 'K', 'right': ';', 'drop': 'O', 'hold': [','], 'rotateR': 'P', 'rotateL': 'I', pause:'J'}
+const defaultKeyboardAlias: keyboardAlias = {'→': 'D', '←' : 'A', '↓': 'S', '↑': 'E', '_': 'W', 'V': 'X', '/': 'Q', '\\' : 'E', 'P': 'F'}
 
-const firstKeyBinds = ref<KeyBinds>({'down': 'S', 'left': 'A', 'right': 'D', 'drop': 'W', 'hold': ['X'], 'rotateR': 'E', 'rotateL': 'Q', pause:'F'})
-const firstKeyboardAlias = ref<keyboardAlias>({'→': 'D', '←' : 'A', '↓': 'S', '↑': 'E', '_': 'W', 'V': 'X', '/': 'Q', '\\' : 'E', 'P': 'F'})
-const secondKeyBinds = ref<KeyBinds>({'down': 'L', 'left': 'K', 'right': ';', 'drop': 'O', 'hold': [','], 'rotateR': 'P', 'rotateL': 'I', pause:'J'})
+const firstKeyBinds = ref<KeyBinds>(structuredClone(defaultKeybindFirst))
+const secondKeyBinds = ref<KeyBinds>(structuredClone(defaultKeybindSecond))
+const firstKeyboardAlias = ref<keyboardAlias>(structuredClone(defaultKeyboardAlias))
 
 //window.setTimeout(() => firstKeyBinds.value.down = "F", 5000)
 
@@ -52,7 +55,10 @@ const secondKeyBinds = ref<KeyBinds>({'down': 'L', 'left': 'K', 'right': ';', 'd
         v-model:keybind-second="secondKeyBinds"
         :reset="reset"
         v-model:keyboard-alias="firstKeyboardAlias"
-        :settting-id="SettingID"
+        :setting-id="SettingID"
+        :default-keybind-first="defaultKeybindFirst"
+        :default-keybind-second="defaultKeybindSecond"
+        :default-keyboard-alias="defaultKeyboardAlias"
       ></KeybindSetting>
     </div>
     <div style="display: flex;justify-content: center;">

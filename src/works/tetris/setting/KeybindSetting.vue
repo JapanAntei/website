@@ -14,7 +14,15 @@ const keybindFirst = defineModel<KeyBinds>("keybindFirst")
 const keybindSecond = defineModel<KeyBinds>("keybindSecond")
 const keyboardAlias = defineModel<keyboardAliasType>("keyboardAlias")
 
-const props = defineProps({secondPlayer: Boolean, reset: Number, settingId: String})
+const props = defineProps<
+{
+    secondPlayer: boolean,
+    reset: number,
+    settingId: string,
+    defaultKeybindFirst: KeyBinds,
+    defaultKeybindSecond: KeyBinds,
+    defaultKeyboardAlias: keyboardAliasType,
+}>()
 
 const holdRef = ref<number>(holdNum)
 
@@ -50,30 +58,30 @@ function getStorageKeybinds(binds: ModelRef<KeyBinds | undefined, string>, defau
 onMounted(() =>{
     getStorageKeybinds(
         keybindFirst,
-        {'down': 'S', 'left': 'A', 'right': 'D', 'drop': 'W', 'hold': ['X'], 'rotateR': 'E', 'rotateL': 'Q', pause:'F'},
+        props.defaultKeybindFirst,
         "FirstKeyBind"
     )
     getStorageKeybinds(
         keybindSecond,
-        {'down': 'L', 'left': 'K', 'right': ';', 'drop': 'O', 'hold': [','], 'rotateR': 'P', 'rotateL': 'I', pause:'J'},
+        props.defaultKeybindSecond,
         "SecondKeyBind"
     )
-  // try{
-  //   const secondKeyBindStorage = JSON.parse(localStorage.getItem("GoMeTetrisSecondKeybind") ?? "{}")
-    // for(const index in secondKeyBindStorage){
-    //   secondKeyBinds.value[index as keyof KeyBinds] = secondKeyBindStorage[index]
-    // }
-  // } catch(e){}
     if(keyboardAlias.value){
+    console.log(props.defaultKeybindFirst)
+    console.log(props.defaultKeyboardAlias)
+        for(const key in keyboardAlias.value){
+            delete keyboardAlias.value[key as keys]
+        }
         try{
             const keyAliasStorage = JSON.parse(localStorage.getItem(props.settingId + "KeyAlias") ?? "")
-            for(const key in keyboardAlias.value){
-                delete keyboardAlias.value[key as keys]
-            }
             for(const index in keyAliasStorage){
                 keyboardAlias.value[index as keys] = keyAliasStorage[index]
             }
-        } catch(e){}
+        } catch(e){
+            for(const index in props.defaultKeyboardAlias){
+                keyboardAlias.value[index as keys] = props.defaultKeyboardAlias[index as keys]
+            }
+        }
     }
 })
 
