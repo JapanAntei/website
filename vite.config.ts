@@ -24,6 +24,7 @@ export default defineConfig({
         404: path.resolve(import.meta.dirname, 'src/404.html'),
         about: path.resolve(import.meta.dirname, 'src/about/index.html'),
         tetris: path.resolve(import.meta.dirname, 'src/works/tetris/index.html'),
+        tetris2: path.resolve(import.meta.dirname, 'src/works/tetris/twice/index.html'),
       },
     }
   },
