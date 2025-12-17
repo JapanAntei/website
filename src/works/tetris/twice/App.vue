@@ -1,33 +1,32 @@
 <script setup lang="ts">
 import NAHeader from '@shared/components/NAHeader.vue'
 import NAFooter from '@shared/components/NAFooter.vue';
-import Tetris from './scripts/tetris.vue';
-import TetrisSetting from './setting/TetrisSetting.vue';
+import Tetris from '../scripts/tetris.vue';
+import TetrisSetting from '../setting/TetrisSetting.vue';
 import { ref } from 'vue';
-import type { KeyBinds, keyboardAlias } from './scripts/globalData';
-import KeybindSetting from './setting/KeybindSetting.vue';
+import type { KeyBinds, keyboardAlias } from '../scripts/globalData';
+import KeybindSetting from '../setting/KeybindSetting.vue';
 
-const SettingID = "GoMeTetris"
+const SettingID = "GoMeTetrisTwice"
 
 const pausing = ref<boolean>(false)
 const reset = ref<number>(0)
 
 const defaultKeybindFirst: KeyBinds = {'down': 'S', 'left': 'A', 'right': 'D', 'drop': 'W', 'hold': ['X'], 'rotateR': 'E', 'rotateL': 'Q', pause:'F'}
-const defaultKeybindSecond: KeyBinds = {'down': 'L', 'left': 'K', 'right': ';', 'drop': 'O', 'hold': [','], 'rotateR': 'P', 'rotateL': 'I', pause:'J'}
+const defaultKeybindSecond: KeyBinds = {'down': 'S', 'left': 'A', 'right': 'D', 'drop': 'W', 'hold': ['X'], 'rotateR': 'E', 'rotateL': 'Q', pause:'G'}
 const defaultKeyboardAlias: keyboardAlias = {'→': 'D', '←' : 'A', '↓': 'S', '↑': 'E', '_': 'W', 'V': 'X', '/': 'Q', '\\' : 'E', 'P': 'F'}
 
 const firstKeyBinds = ref<KeyBinds>(structuredClone(defaultKeybindFirst))
 const secondKeyBinds = ref<KeyBinds>(structuredClone(defaultKeybindSecond))
 const firstKeyboardAlias = ref<keyboardAlias>(structuredClone(defaultKeyboardAlias))
 
-//window.setTimeout(() => firstKeyBinds.value.down = "F", 5000)
 
 </script>
 
 <template>
   <NAHeader/>
   <main>
-    <h1>Go Me Tetris</h1>
+    <h1>Go Me Tetris Twice</h1>
     <div style="display: flex;justify-content: center;">
 
       <Tetris :left="true" 
@@ -37,7 +36,7 @@ const firstKeyboardAlias = ref<keyboardAlias>(structuredClone(defaultKeyboardAli
         v-model:reset="reset"
         :settting-id="SettingID"
         />
-      <!-- <Tetris :left="false" 
+      <Tetris :left="false" 
         :key-binds="secondKeyBinds"
         :keyboard-alias="firstKeyboardAlias"
         v-model:pausing="pausing"

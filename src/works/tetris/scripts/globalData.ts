@@ -7,6 +7,70 @@ export type shapeData = {
 };
 export type shapesData = shapeData[];
 
+export const keyCode = {
+  "Space": "_",
+  "ArrowLeft": "←",
+  "ArrowUp": "↑",
+  "ArrowRight": "→",
+  "ArrowDown": "↓",
+  "Degit0": "0",
+  "Degit1": "1",
+  "Degit2": "2",
+  "Degit3": "3",
+  "Degit4": "4",
+  "Degit5": "5",
+  "Degit6": "6",
+  "Degit7": "7",
+  "Degit8": "8",
+  "Degit9": "9",
+  "Semicolon": ";",
+  "KeyA": "A",
+  "KeyB": "B",
+  "KeyC": "C",
+  "KeyD": "D",
+  "KeyE": "E",
+  "KeyF": "F",
+  "KeyG": "G",
+  "KeyH": "H",
+  "KeyI": "I",
+  "KeyJ": "J",
+  "KeyK": "K",
+  "KeyL": "L",
+  "KeyM": "M",
+  "KeyN": "N",
+  "KeyO": "O",
+  "KeyP": "P",
+  "KeyQ": "Q",
+  "KeyR": "R",
+  "KeyS": "S",
+  "KeyT": "T",
+  "KeyU": "U",
+  "KeyV": "V",
+  "KeyW": "W",
+  "KeyX": "X",
+  "KeyY": "Y",
+  "KeyZ": "Z",
+  "Comma": ",",
+  "Period": ".",
+  "Slash": "/",
+  "IntlRo": "\\"
+} as const
+
+export type keys = (typeof keyCode)[keyof typeof keyCode];
+
+export interface KeyBinds{
+  drop: keys;
+  down:keys;
+  left:keys;
+  right:keys;
+  rotateR: keys;
+  rotateL: keys;
+  hold: keys[];
+  pause: keys;
+}
+
+export type keyboardAlias = Partial<Record<keys, keys>>
+
 let localStorageSettings: TetrisSettings | null = null;
 interface TetrisSettings {
     blockSize: number;
@@ -108,9 +172,9 @@ export function getSettingObj(storageName?: string): TetrisSettings{
     }
 }
 
-function getSetting<T extends keyof TetrisSettings>(settingId: T, storageName = "GoMeTetrisSettings"): TetrisSettings[T] {
+function getSetting<T extends keyof TetrisSettings>(settingId: T, storageName = "GoMeTetris"): TetrisSettings[T] {
     try{
-        if (!localStorageSettings) localStorageSettings = JSON.parse(localStorage.getItem(storageName) ?? "{}") ?? {};
+        if (!localStorageSettings) localStorageSettings = JSON.parse(localStorage.getItem(storageName + "Settings") ?? "{}") ?? {};
         return localStorageSettings?.[settingId] ?? defaultSettings[settingId];
     } catch(e){
         return defaultSettings[settingId]

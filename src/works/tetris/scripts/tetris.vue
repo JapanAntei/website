@@ -28,10 +28,34 @@ THE SOFTWARE.
 */
 
 import { gameOver, gamePause, drawNext, genBlock, genStrokedBlock, scoreDisplay, type ScoreStructure, SpinType } from './canvasController';
-import { bigBlockBox, blockNumHeight, blockNumWidth, blockSize, DLEffect, fieldColor, fieldHeight, fieldWidth, holdNum, nextNum, smallBlockBox, startingShapes, dropShapes, getSettingObj, type shape, type shapeData, randomType, rotateSystem, ghost, lockdownSystem, scoreDisplay as scoreDisplaySetting} from './globalData';
-import { ref, onMounted,/*, onBeforeUpdate*/ 
-watch,
-} from 'vue';
+import { 
+  bigBlockBox,
+  blockNumHeight,
+  blockNumWidth,
+  blockSize,
+  DLEffect,
+  fieldColor,
+  fieldHeight,
+  fieldWidth,
+  holdNum,
+  nextNum,
+  smallBlockBox,
+  startingShapes,
+  dropShapes,
+  getSettingObj,
+  type shape,
+  type shapeData,
+  randomType,
+  rotateSystem,
+  ghost,
+  lockdownSystem,
+  scoreDisplay as scoreDisplaySetting,
+  keyCode,
+  type keys,
+  type keyboardAlias,
+  type KeyBinds
+} from './globalData';
+import { ref, onMounted, watch,} from 'vue';
 import { shapes } from './shapes';
 
 /*
@@ -39,75 +63,14 @@ import { shapes } from './shapes';
  */
 // 初期化
 
-const keyCode = {
-  32: "_",
-  37: "←",
-  38: "↑",
-  39: "→",
-  40: "↓",
-  48: "0",
-  49: "1",
-  50: "2",
-  51: "3",
-  52: "4",
-  53: "5",
-  54: "6",
-  55: "7",
-  56: "8",
-  57: "9",
-  59: ";",
-  65: "A",
-  66: "B",
-  67: "C",
-  68: "D",
-  69: "E",
-  70: "F",
-  71: "G",
-  72: "H",
-  73: "I",
-  74: "J",
-  75: "K",
-  76: "L",
-  77: "M",
-  78: "N",
-  79: "O",
-  80: "P",
-  81: "Q",
-  82: "R",
-  83: "S",
-  84: "T",
-  85: "U",
-  86: "V",
-  87: "W",
-  88: "X",
-  89: "Y",
-  90: "Z",
-  188: ",",
-  189: ".",
-  191: "/",
-  220: "\\"
-}
-
-interface KeyBinds{
-  drop: string;
-  down:string;
-  left:string;
-  right:string;
-  rotateR: string;
-  rotateL: string;
-  hold: string[];
-  pause: string;
-}
 
 interface Props{
   left: boolean;
   keyBinds?: KeyBinds;
-  keyboardAlias?: KeyboardAlias;
+  keyboardAlias?: keyboardAlias;
+  setttingId: string,
 }
 
-interface KeyboardAlias{
-  [k : string]: string;
-}
 
 const props = withDefaults(defineProps<Props>(),
   {
@@ -119,10 +82,10 @@ const props = withDefaults(defineProps<Props>(),
       right: "←",
       rotateR:"\\",
       rotateL:"/",
-      hold:["v"],
+      hold:["V"],
       pause:"F"
     }),
-    keyboardAlias: (): KeyboardAlias => ({}),
+    keyboardAlias: (): keyboardAlias => ({}),
   }
 )
 
@@ -209,11 +172,8 @@ onMounted(() => {
 
 function resetGame() {
   gameEnd = false;
-  if(gamePaused.value){
-    gamePaused.value = false;
-  }
   clearTimeout(timeoutID)
-  getSettingObj()
+  getSettingObj(props.setttingId)
     holdFields.value = holdFields.value.filter((e) => e.parentElement?.parentElement)
     nextFields.value = nextFields.value.filter((e) => e.parentElement?.parentElement)
   let isFirst = true;
@@ -252,7 +212,8 @@ function resetGame() {
   scoreDisplaying = false;
   scoreStructure = { score: 0, srs: 0, line:0, level: 0, allLine: false, TSpined: SpinType.None, shape: 0 }
   clearTimeout(timeoutID)
-  loopGame();
+  if((gamePaused.value as boolean) === true) toPause(true)
+  else loopGame();
 }
 
 
@@ -792,26 +753,14 @@ const moveDown = function (isFirst = true) {
     dTimeout = setTimeout(() => moveDown(false), isFirst ? checkLongPress : sensitivity);
   }
 }
-// キー取得
-var getKeyCode = function(e : KeyboardEvent): number {
-  var code;
-  if (window.event) {  // IE
-    code = e.keyCode;
-  } else if(e.which) { // Netscape/Firefox/Opera
-    code = e.which;
-  }else {
-    code = -1
-  }
-  return code;
-}
 
-const getKeyAlias = function(baseKey: string): string{
+const getKeyAlias = function(baseKey: keys): keys{
   if(props.keyboardAlias[baseKey]) return getKeyAlias(props.keyboardAlias[baseKey])
   else return baseKey;
 }
 
-const equalKeyCode = function(bindedKey: string, enteredKeyCode:number){
-  return bindedKey === getKeyAlias(keyCode[enteredKeyCode as 32])
+const equalKeyCode = function(bindedKey: string, enteredKeyCode:string){
+  return bindedKey === getKeyAlias(keyCode[enteredKeyCode as "Space"])
 }
 
 /*
@@ -820,7 +769,7 @@ const equalKeyCode = function(bindedKey: string, enteredKeyCode:number){
 // キーアップイベント初期化(押しっ放し対応)
 document.addEventListener("keyup", (e) => {
 
-  var keycode = getKeyCode(e);
+  var keycode = e.code;
   if (equalKeyCode(props.keyBinds.drop, keycode)) {          // space
     spacePressed = false;
   } else if (equalKeyCode(props.keyBinds.left, keycode)) {   // ←
@@ -838,7 +787,7 @@ document.addEventListener("keyup", (e) => {
 // キーダウンイベント初期化
 document.addEventListener("keydown",(e) => {
 
-  var keycode = getKeyCode(e);
+  var keycode = e.code;
   if (!gameEnd && !gamePaused.value && !gameEffecting) {
     if (equalKeyCode(props.keyBinds.rotateR, keycode)) {        // ↑
       e.preventDefault();
@@ -862,9 +811,9 @@ document.addEventListener("keydown",(e) => {
       e.preventDefault();
       controlBlock.dropDown();
     }
-     else if (props.keyBinds.hold.includes( getKeyAlias(keyCode[keycode as 32]))) { // ↓
+     else if (props.keyBinds.hold.includes( getKeyAlias(keyCode[keycode as "Space"]))) { // ↓
       e.preventDefault();
-      controlBlock.hold(props.keyBinds.hold.indexOf( getKeyAlias(keyCode[keycode as 32])));
+      controlBlock.hold(props.keyBinds.hold.indexOf( getKeyAlias(keyCode[keycode as "Space"])));
 
     }
      else if (equalKeyCode(props.keyBinds.rotateL, keycode)) { // ↓
@@ -887,8 +836,10 @@ const pauseControl = (e?: TouchEvent | MouseEvent) => {
 }
 
 
-watch(() => gamePaused.value, (val)=>{
-  if(!val){
+watch(() => gamePaused.value, (val)=>toPause(val ?? false))
+
+function toPause(paused: boolean){
+  if(!paused){
     drawGameField();
     timeoutID = setTimeout(loopGame, speed);
   }else if(!gameEffecting){
@@ -897,11 +848,15 @@ watch(() => gamePaused.value, (val)=>{
     dKeyPressed = false;
     gamePause(tfield.value?.getContext("2d")!);
   }
-})
+}
 
 watch(() => gameReset.value, (val)=>{
-  if(val && val >= 1)
+  if(val && val >= 1){
     resetGame()
+    if(gamePaused.value){
+      gamePaused.value = false;
+    } 
+  }
 })
 
 const confirmResetGame = (e: TouchEvent | MouseEvent) => {
