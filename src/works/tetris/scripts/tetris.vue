@@ -172,9 +172,6 @@ onMounted(() => {
 
 function resetGame() {
   gameEnd = false;
-  if(gamePaused.value){
-    gamePaused.value = false;
-  }
   clearTimeout(timeoutID)
   getSettingObj(props.setttingId)
     holdFields.value = holdFields.value.filter((e) => e.parentElement?.parentElement)
@@ -215,7 +212,8 @@ function resetGame() {
   scoreDisplaying = false;
   scoreStructure = { score: 0, srs: 0, line:0, level: 0, allLine: false, TSpined: SpinType.None, shape: 0 }
   clearTimeout(timeoutID)
-  loopGame();
+  if((gamePaused.value as boolean) === true) toPause(true)
+  else loopGame();
 }
 
 
@@ -838,8 +836,10 @@ const pauseControl = (e?: TouchEvent | MouseEvent) => {
 }
 
 
-watch(() => gamePaused.value, (val)=>{
-  if(!val){
+watch(() => gamePaused.value, (val)=>toPause(val ?? false))
+
+function toPause(paused: boolean){
+  if(!paused){
     drawGameField();
     timeoutID = setTimeout(loopGame, speed);
   }else if(!gameEffecting){
@@ -848,11 +848,15 @@ watch(() => gamePaused.value, (val)=>{
     dKeyPressed = false;
     gamePause(tfield.value?.getContext("2d")!);
   }
-})
+}
 
 watch(() => gameReset.value, (val)=>{
-  if(val && val >= 1)
+  if(val && val >= 1){
     resetGame()
+    if(gamePaused.value){
+      gamePaused.value = false;
+    } 
+  }
 })
 
 const confirmResetGame = (e: TouchEvent | MouseEvent) => {

@@ -7,9 +7,9 @@ import { ref } from 'vue';
 import type { KeyBinds, keyboardAlias } from '../scripts/globalData';
 import KeybindSetting from '../setting/KeybindSetting.vue';
 
-const SettingID = "GoMeTetris"
+const SettingID = "GoMeTetrisTwice"
 
-const pausing = ref(false)
+const pausing = ref<boolean>(false)
 const reset = ref<number>(0)
 
 const defaultKeybindFirst: KeyBinds = {'down': 'S', 'left': 'A', 'right': 'D', 'drop': 'W', 'hold': ['X'], 'rotateR': 'E', 'rotateL': 'Q', pause:'F'}
