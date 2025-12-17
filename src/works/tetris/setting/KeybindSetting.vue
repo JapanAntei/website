@@ -33,13 +33,19 @@ watch(() => props.reset, () =>{
     holdRef.value = holdNum
 })
 
-function getStorageKeybinds(binds: ModelRef<KeyBinds | undefined, string>, defaultBinds: KeyBinds, bindsName: string){
+function getStorageKeybinds(binds: ModelRef<KeyBinds | undefined, string>, defaultBinds: KeyBinds, bindsName?: string){
     let keyBindStorage: KeyBinds = defaultBinds;
-    const storageStr = localStorage.getItem(props.settingId +bindsName)
-    if(storageStr){
-        try{
-            keyBindStorage = JSON.parse(storageStr)
-        } catch(e){}
+    if(bindsName){
+        const storageStr = localStorage.getItem(props.settingId +bindsName)
+        if(storageStr){
+            try{
+                keyBindStorage = JSON.parse(storageStr)
+            } catch(e){
+                keyBindStorage = structuredClone(defaultBinds)
+            }
+        }
+    }else{
+        keyBindStorage = structuredClone(defaultBinds)
     }
     if(binds.value){
         for(const index in keyBindStorage){
@@ -55,20 +61,8 @@ function getStorageKeybinds(binds: ModelRef<KeyBinds | undefined, string>, defau
     }
 }
 
-onMounted(() =>{
-    getStorageKeybinds(
-        keybindFirst,
-        props.defaultKeybindFirst,
-        "FirstKeyBind"
-    )
-    getStorageKeybinds(
-        keybindSecond,
-        props.defaultKeybindSecond,
-        "SecondKeyBind"
-    )
+function getStorageKeyAlias(){
     if(keyboardAlias.value){
-    console.log(props.defaultKeybindFirst)
-    console.log(props.defaultKeyboardAlias)
         for(const key in keyboardAlias.value){
             delete keyboardAlias.value[key as keys]
         }
@@ -83,6 +77,51 @@ onMounted(() =>{
             }
         }
     }
+}
+
+function saveStorageKeybinds(isFirst: Boolean){
+    localStorage.setItem(
+        props.settingId + (isFirst ? "FirstKeyBind" :"SecondKeyBind"),
+        JSON.stringify(isFirst ? keybindFirst.value : keybindSecond.value)
+    )
+}
+
+function saveStorageKeyAlias(){
+    localStorage.setItem(props.settingId + "KeyAlias", JSON.stringify(keyboardAlias.value))
+}
+
+function resetStorageKeyBinds(){
+    localStorage.removeItem(props.settingId + "FirstKeyBind")
+    localStorage.removeItem(props.settingId + "SecondKeyBind")
+    getStorageKeybinds(
+        keybindFirst,
+        props.defaultKeybindFirst,
+    )
+    getStorageKeybinds(
+        keybindSecond,
+        props.defaultKeybindSecond,
+    )
+}
+
+function resetStorageKeyAlias(){
+    localStorage.removeItem(props.settingId + "KeyAlias")
+    getStorageKeyAlias()
+    addKeyAliasKey.value = undefined;
+    addKeyAliasItem.value = undefined;
+}
+
+onMounted(() =>{
+    getStorageKeybinds(
+        keybindFirst,
+        props.defaultKeybindFirst,
+        "FirstKeyBind"
+    )
+    getStorageKeybinds(
+        keybindSecond,
+        props.defaultKeybindSecond,
+        "SecondKeyBind"
+    )
+    getStorageKeyAlias();
 })
 
 function settingKeyboard(isFirst = true, keyType: keyof KeyBinds = "down",  e: KeyboardEvent){
@@ -91,6 +130,7 @@ function settingKeyboard(isFirst = true, keyType: keyof KeyBinds = "down",  e: K
     if(e.code in keyCode){
         if(isFirst && keybindFirst.value) (keybindFirst.value[keyType] as keys) = keyCode[e.code as "Space"]
         if(!isFirst && keybindSecond.value) (keybindSecond.value[keyType] as keys) = keyCode[e.code as "Space"]
+        saveStorageKeybinds(isFirst)
     }
 }
 function settingKeyboardHold(isFirst = true, index: number,  e: KeyboardEvent){
@@ -105,6 +145,8 @@ function settingKeyboardHold(isFirst = true, index: number,  e: KeyboardEvent){
             if(!keybindSecond.value.hold) keybindSecond.value.hold = []
             keybindSecond.value.hold[index] = keyCode[e.code as "Space"]
         }
+        saveStorageKeybinds(isFirst)
+
     }
 }
 
@@ -115,6 +157,7 @@ function settingKeyaliasFromKey(key: keys = "_", e: KeyboardEvent){
         if(keyboardAlias.value){
             keyboardAlias.value[keyCode[e.code as "Space"]] = keyboardAlias.value[key]
             delete keyboardAlias.value[key]
+            saveStorageKeyAlias()
         }
     }
 }
@@ -125,6 +168,7 @@ function settingKeyaliasFromItem(key: keys = "_", e: KeyboardEvent){
     if(e.code in keyCode){
         if(keyboardAlias.value){
             keyboardAlias.value[key] = keyCode[e.code as "Space"]
+            saveStorageKeyAlias()
         }
     }
 
@@ -133,6 +177,7 @@ function settingKeyaliasFromItem(key: keys = "_", e: KeyboardEvent){
 function removeKeyalias(key: keys = "_"){
     if(keyboardAlias.value){
         delete keyboardAlias.value[key]
+        saveStorageKeyAlias()
     }
 }
 
@@ -141,15 +186,20 @@ function addKeyalias(){
         keyboardAlias.value[addKeyAliasKey.value] = addKeyAliasItem.value;
         addKeyAliasKey.value = undefined;
         addKeyAliasItem.value = undefined;
+        saveStorageKeyAlias()
     }
 }
 
 function addingKeyAliasKey(e: KeyboardEvent){
+    e.preventDefault()
+    e.stopPropagation()
     if(e.code in keyCode){
         addKeyAliasKey.value = keyCode[e.code as "Space"]
     }
 }
 function addingKeyAliasItem(e: KeyboardEvent){
+    e.preventDefault()
+    e.stopPropagation()
     if(e.code in keyCode){
         addKeyAliasItem.value = keyCode[e.code as "Space"]
     }
@@ -166,9 +216,11 @@ function addingKeyAliasItem(e: KeyboardEvent){
                 <span>{{ item.name }}</span>
                 <div style="text-align: left; margin-left: 10px;">
                     <div style="vertical-align: top">
+                        <span v-if="secondPlayer">1P </span>
                         <input type="text" :placeholder="keybindFirst?.[item.id] as keys ?? 'なし'" @keydown="(e: KeyboardEvent) => settingKeyboard(true, item.id, e)">
                     </div>
                     <div style="vertical-align: top" v-if="secondPlayer" :key="`keybind-second-${item.id}`">
+                        <span>2P </span>
                         <input type="text" :placeholder="keybindSecond?.[item.id] as keys ?? 'なし'" @keydown="(e: KeyboardEvent) => settingKeyboard(false, item.id, e)">
                     </div>
                 </div>
@@ -177,13 +229,16 @@ function addingKeyAliasItem(e: KeyboardEvent){
                 <span>{{ `ホールド ${index}` }}</span>
                 <div style="text-align: left; margin-left: 10px;">
                     <div style="vertical-align: top">
+                        <span v-if="secondPlayer">1P </span>
                         <input type="text" :placeholder="keybindFirst?.hold[index-1] as keys ?? 'なし'" @keydown="(e: KeyboardEvent) => settingKeyboardHold(true, index-1, e)">
                     </div>
                     <div style="vertical-align: top" v-if="secondPlayer" :key="`keybind-second-${index}`">
+                        <span>2P </span>
                         <input type="text" :placeholder="keybindSecond?.hold[index-1] as keys ?? 'なし'" @keydown="(e: KeyboardEvent) => settingKeyboardHold(false, index-1, e)">
                     </div>
                 </div>
             </div>
+            <button @click="resetStorageKeyBinds">キーバインドをリセットする</button>
         </div>
         <h3>キーの割り当て変更</h3>
         <div id="keyAlias">
@@ -202,7 +257,7 @@ function addingKeyAliasItem(e: KeyboardEvent){
                     <button @click="() => removeKeyalias(key)" class="controlButton">×</button>
                 </div>
             </div>
-            <div class="keyaliasBox">
+            <div class="keyaliasBox" key="keyaliasAdd">
                 <div style="text-align: left;">
                     <div style="vertical-align: top">
                         <input type="text" :placeholder="addKeyAliasKey as keys ?? 'キーを入力してください'" @keydown="(e: KeyboardEvent) => addingKeyAliasKey(e)">
@@ -217,6 +272,7 @@ function addingKeyAliasItem(e: KeyboardEvent){
                     <button @click="addKeyalias" class="controlButton">+</button>
                 </div>
             </div>
+            <button @click="resetStorageKeyAlias">キーの割り当て変更をリセットする</button>
         </div>
     </details>
 </template>
