@@ -418,6 +418,7 @@ export const shapes: shapesData = [
             ],
         ],
         color: "#B0AC00",
+        shapeName: "G",
     },
     // □■■
     // ■□■
@@ -449,6 +450,7 @@ export const shapes: shapesData = [
             ],
         ],
         color: "#C6ABFB",
+        shapeName: "G",
     },
     // ■□
     // □■

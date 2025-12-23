@@ -104,7 +104,9 @@ let srsMultiply = 1;
 
 let TSpined: SpinType = SpinType.None;
 
-
+const GSpinMiniTemplete11: [shape, shape, shape, shape] = [[[1,-1]],[[1,1]],[[-1,1]],[[-1,-1]]]
+const GSpinMiniTemplete12: [shape, shape, shape, shape] = [[[-1,-1]],[[1,-1]],[[1,1]],[[-1,1]]]
+const GSpinTemplete: [shape, shape, shape, shape] = [[[1, 1],[0,1],[-1,1]], [[-1, 1],[-1,0],[-1,-1]], [[-1, -1],[0,-1],[0,-1]], [[1, 1],[1,0],[1,-1]]]
 
 /*
  * 状態を保持する変数の定義
@@ -354,6 +356,26 @@ const controlBlock: {
           } else {
             TSpined = SpinType.Mini
             spinShape = 7;
+          }
+        }else{
+          TSpined = SpinType.None
+          spinShape = 0;
+        }
+      } else if ((controlBlock.shapeID === 11 || controlBlock.shapeID === 12) && controlBlock.collision(0,0,[[0,0]])){
+        if(
+          controlBlock.shapeID === 11 && controlBlock.collision(0,0,GSpinMiniTemplete11[new_rot])
+           || controlBlock.shapeID === 12 && controlBlock.collision(0,0,GSpinMiniTemplete12[new_rot])
+        ){
+          if(
+            controlBlock.collision(0,0, [GSpinTemplete[new_rot][0]])
+             && controlBlock.collision(0,0, [GSpinTemplete[new_rot][1]])
+             && controlBlock.collision(0,0, [GSpinTemplete[new_rot][2]])
+          ){
+            TSpined = SpinType.Full
+            spinShape = 11;
+          } else {
+            TSpined = SpinType.Mini
+            spinShape = 11;
           }
         }else{
           TSpined = SpinType.None
