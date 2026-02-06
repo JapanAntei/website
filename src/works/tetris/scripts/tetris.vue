@@ -392,10 +392,10 @@ const controlBlock: {
       if(rotateSystem){
         if(controlBlock.rotateType === 0){
           if(new_rot === 0){
-            rotating(controlBlock.rot === 1 ? 1 : -2, 0, srsFunc)
-             || rotating(controlBlock.rot === 1 ? 1 : -2, 1, srsFunc)
+            rotating(-rotateDirection, 0, srsFunc)
+             || rotating(-rotateDirection, 1, srsFunc)
              || rotating(0, -2, srsFunc)
-             || rotating(-1 * rotateDirection, -2, () => srsFunc(true));
+             || rotating(-rotateDirection, -2, () => srsFunc(true));
           } else if(new_rot === 1){
             rotating(-1, 0, srsFunc)
              || rotating(-1, -1, srsFunc)
@@ -403,7 +403,7 @@ const controlBlock: {
              || rotating(-1, 2, () => srsFunc(true));
           } else if(new_rot === 2){
             rotating(rotateDirection, 0, srsFunc)
-             || rotating(rotateDirection, -1, srsFunc)
+             || rotating(rotateDirection, 1, srsFunc)
              || rotating(0, -2, srsFunc)
              || rotating(rotateDirection, -2, () => srsFunc(true));
           } else if(new_rot === 3){
@@ -413,57 +413,49 @@ const controlBlock: {
              || rotating(1, 2, () => srsFunc(true));
           }
         } else if(controlBlock.rotateType === 1){
-          if(new_rot === 0){
-            rotating(-2 * rotateDirection, 0, srsFunc)
-             || rotating(rotateDirection, 0, srsFunc)
-             || ( controlBlock.rot == 1 && (
-                   rotating(2, -1, srsFunc)
-                   || rotating(-1, 2, () => srsFunc(true))
-             ))
-             || ( controlBlock.rot == 3 && (
-                   rotating(1,2, srsFunc)
-                    || rotating(-2,-1, () => srsFunc(true))
-             ));
-          } else if(new_rot === 1){
-            controlBlock.rot == 0 && (
-              rotating(-2, 0, srsFunc)
-               || rotating(-2, 0, srsFunc)
-               || rotating(-2, 1, srsFunc)
-               || rotating(1, -2, () => srsFunc(true))
-            );
-
-            controlBlock.rot == 2 && ( 
-              rotating(1,0, srsFunc)
-               || rotating(1, 0, srsFunc)
-               || rotating(1, 2, srsFunc)
-               || rotating(-2, -1, () => srsFunc(true))
-            );
-          } else if(new_rot === 2){
-            rotating(-rotateDirection,0, srsFunc)
-             || rotating(2 * rotateDirection,0, srsFunc)
-             || ( controlBlock.rot == 1  && (
-                   rotating(-1, -2, srsFunc)
-                    || rotating(2, 1, () => srsFunc(true))
-             ))
-             || ( controlBlock.rot == 3 && (
-                   rotating(-2 ,1, srsFunc)
-                    || rotating(1, -2, () => srsFunc(true))
-             ));
-          } else if(new_rot === 3){
-            controlBlock.rot == 0 && (
-              rotating(-1, 0, srsFunc)
-               || rotating(2, 0, srsFunc)
-               || rotating(-1, -2, srsFunc)
-               || rotating(2, 1, () => srsFunc(true))
-            );
-
-            controlBlock.rot == 2  && (
-              rotating(2, 0, srsFunc)
-               || rotating(-1, 0, srsFunc)
-               || rotating(2, -1, srsFunc)
-               || rotating(-1, 2, () => srsFunc(true))
-            );
+          if(new_rot === 0 || controlBlock.rot === 3){
+            rotating(1, 0, srsFunc)
+             || rotating(-2, 0, srsFunc)
+             || rotating(1, 2, srsFunc)
+             || rotating(-2, -1, () => srsFunc(true))
+          } else if(new_rot === 0 || controlBlock.rot === 1){
+            rotating(2, 0, srsFunc)
+             || rotating(-1, 0, srsFunc)
+             || rotating(2, -1, srsFunc)
+             || rotating(-1, 2, () => srsFunc(true))
+          } else if(new_rot === 1 || controlBlock.rot === 0){
+            rotating(-2, 0, srsFunc)
+             || rotating(1, 0, srsFunc)
+             || rotating(-2, 1, srsFunc)
+             || rotating(1, -2, () => srsFunc(true))
+          } else if(new_rot === 1 || controlBlock.rot === 2){
+            rotating(1, 0, srsFunc)
+             || rotating(-2, 0, srsFunc)
+             || rotating(1, 2, srsFunc)
+             || rotating(-2, -1, () => srsFunc(true))
+          } else if(new_rot === 2 || controlBlock.rot === 1){
+            rotating(-1, 0, srsFunc)
+             || rotating(2, 0, srsFunc)
+             || rotating(-1, -2, srsFunc)
+             || rotating(2, 1, () => srsFunc(true))
+          } else if(new_rot === 2 || controlBlock.rot === 3){
+            rotating(-2, 0, srsFunc)
+             || rotating(1, 0, srsFunc)
+             || rotating(-2, 1, srsFunc)
+             || rotating(1, -2, () => srsFunc(true))
+          } else if(new_rot === 3 || controlBlock.rot === 2){
+            rotating(2, 0, srsFunc)
+             || rotating(-1, 0, srsFunc)
+             || rotating(2, -1, srsFunc)
+             || rotating(-1, 2, () => srsFunc(true))
+          } else if(new_rot === 3 || controlBlock.rot === 0){
+            rotating(-1, 0, srsFunc)
+             || rotating(2, 0, srsFunc)
+             || rotating(-1, -2, srsFunc)
+             || rotating(2, 1, () => srsFunc(true))
           }
+
+
         }
       } else {
         if (rotating(rotateDirection, 0, TspinCheck)) {}
