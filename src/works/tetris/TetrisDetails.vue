@@ -10,7 +10,7 @@
     <p style="font-weight: 700;">落下間隔[ms] = 700 - レベル * 50</p>
     <p>レベル14以上では、理論上落下間隔が0msになります。</p>
     <h3>Super Rotation Systemについて</h3>
-    <p>Tetrisちゃんねる(<a href="https://tetrisch.github.io/main/srs.html" target="_blank" rel="noopener noreferrer">https://tetrisch.github.io/main/srs.html</a>)に準拠した回転をします。</p>
+    <p>テトリス堂(<a href="https://shiwehi.com/tetris/template/srs.php" target="_blank" rel="noopener noreferrer">https://shiwehi.com/tetris/template/srs.php</a>)に準拠した回転をします。</p>
     <p>一直線のミノのみI字ミノと同様の回転をします。</p>
     <h3>T-Spin判定</h3>
     <p>T字ミノ(ID: 6)でのライン消去時、四隅のうち3箇所が埋まっていたら、</p>
