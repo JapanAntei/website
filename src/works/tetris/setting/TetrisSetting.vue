@@ -24,6 +24,7 @@ const ghost = useTemplateRef("ghost")
 const lockdownSystem = useTemplateRef("lockdownSystem")
 const scoreDisplay = useTemplateRef("scoreDisplay")
 const scoreDetails = useTemplateRef("scoreDetails")
+const slowLevelUp = useTemplateRef("slowLevelUp")
 const shapeCount = [...Array(shapes.length)].map((_, i) => i)
 const shapeField = ref<HTMLCanvasElement[]>([])
 const setShapeFieldRef = (el: any) => {
@@ -37,7 +38,7 @@ const setShapeFieldRef = (el: any) => {
 
 
 const saveSettings = () => {
-    localStorage.setItem(props.setttingId ?? "GoMeTetrisSettings", JSON.stringify({
+    localStorage.setItem(( props.setttingId + "Settings" ) ?? "GoMeTetrisSettings", JSON.stringify({
         blockSize: Number(blockSize.value?.value),
         blockNumHeight: Number(blockNumHeight.value?.value),
         blockNumWidth: Number(blockNumWidth.value?.value),
@@ -52,12 +53,13 @@ const saveSettings = () => {
         lockdownSystem: lockdownSystem.value?.checked,
         scoreDetails: scoreDetails.value?.checked,
         scoreDisplay: scoreDisplay.value?.checked,
+        slowLevelUp: slowLevelUp.value?.checked,
     }))
     alert("設定を保存しました")
 }
 
 const resetSettings = () => {
-    localStorage.setItem(props.setttingId ?? "GoMeTetrisSettings", `{}`)
+    localStorage.setItem(( props.setttingId + "Settings" ) ?? "GoMeTetrisSettings", `{}`)
     if(blockSize.value) blockSize.value.value = defaultSettings.blockSize.toString()
     if(blockNumHeight.value) blockNumHeight.value.value = defaultSettings.blockNumHeight.toString()
     if(blockNumWidth.value) blockNumWidth.value.value = defaultSettings.blockNumWidth.toString()
@@ -70,6 +72,7 @@ const resetSettings = () => {
     if(lockdownSystem.value) lockdownSystem.value.checked = defaultSettings.lockdownSystem;
     if(scoreDetails.value) scoreDetails.value.checked = defaultSettings.scoreDetails;
     if(scoreDisplay.value) scoreDisplay.value.checked = defaultSettings.scoreDisplay;
+    if(slowLevelUp.value) slowLevelUp.value.checked = defaultSettings.slowLevelUp;
     for(const elem of document.querySelectorAll<HTMLInputElement>(".startingShape")){
         elem.checked = defaultSettings.startingShapes.includes(Number(elem.dataset.shapeNumber))
     }
@@ -83,7 +86,7 @@ const moreGoMeTetrisSettings = () => {
     modifiedSettings.randomType = true;
     modifiedSettings.startingShapes = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
     modifiedSettings.dropShapes = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
-    localStorage.setItem(props.setttingId ?? "GoMeTetrisSettings", JSON.stringify(modifiedSettings))
+    localStorage.setItem(( props.setttingId + "Settings" ) ?? "GoMeTetrisSettings", JSON.stringify(modifiedSettings))
     if(randomType.value) randomType.value.checked = modifiedSettings.randomType;
     for(const elem of document.querySelectorAll<HTMLInputElement>(".startingShape")){
         elem.checked = modifiedSettings.startingShapes.includes(Number(elem.dataset.shapeNumber))
@@ -103,7 +106,7 @@ const normalGoMeTetrisSettings = () => {
     modifiedSettings.lockdownSystem = true;
     modifiedSettings.startingShapes = [2,3,5,6]
     modifiedSettings.dropShapes = [0,1,2,3,4,5,6]
-    localStorage.setItem(props.setttingId ?? "GoMeTetrisSettings", JSON.stringify(modifiedSettings))
+    localStorage.setItem(( props.setttingId + "Settings" ) ?? "GoMeTetrisSettings", JSON.stringify(modifiedSettings))
     if(nextNum.value) nextNum.value.value = modifiedSettings.nextNum.toString()
     if(holdNum.value) holdNum.value.value = modifiedSettings.holdNum.toString()
     if(randomType.value) randomType.value.checked = modifiedSettings.randomType;
@@ -149,6 +152,10 @@ const normalGoMeTetrisSettings = () => {
             <li style="vertical-align: top">
                 <input ref="lockdownSystem" type="checkbox" id="lockdownSystem" :checked="settings.lockdownSystem">
                 <label for="lockdownSystem" style="display: inline-block;">ロックダウンを有効にする</label>
+            </li>
+            <li style="vertical-align: top">
+                <input ref="slowLevelUp" type="checkbox" id="slowLevelUp" :checked="settings.slowLevelUp">
+                <label for="slowLevelUp" style="display: inline-block;">レベル10以降の伸びを緩やかにする</label>
             </li>
             
 
