@@ -51,6 +51,7 @@ import {
   lockdownSystem,
   scoreDisplay as scoreDisplaySetting,
   keyCode,
+  slowLevelUp,
   type keys,
   type keyboardAlias,
   type KeyBinds
@@ -718,7 +719,15 @@ const removeLines = function () {
     linesRemoved.value++;
   }
   if (deleteLines.length >= 1) {
-    level.value = Math.floor((linesRemoved.value / 10)) + 1;
+    if (slowLevelUp){
+      if (linesRemoved.value < 90){
+        level.value = Math.floor((linesRemoved.value / 10)) + 1;
+      } else {
+        level.value = Math.floor((( linesRemoved.value - 90 ) / 100)) + 10;
+      }
+    } else {
+      level.value = Math.floor((linesRemoved.value / 10)) + 1;
+    }
     speed = 700 - (level.value * 50);
     if(deleteLines.length >= 4){
       fourLineRmoved.value += deleteLines.length / 4;

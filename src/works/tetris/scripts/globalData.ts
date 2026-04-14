@@ -87,6 +87,7 @@ interface TetrisSettings {
     lockdownSystem: boolean;
     scoreDisplay: boolean;
     scoreDetails: boolean;
+    slowLevelUp: boolean;
 }
 export const defaultSettings: TetrisSettings = {
     blockSize: 20,
@@ -103,6 +104,7 @@ export const defaultSettings: TetrisSettings = {
     lockdownSystem: true,
     scoreDetails: false,
     scoreDisplay: false,
+    slowLevelUp: false,
 };
 
 export let fieldColor = "#202020"; // フィールド背景色
@@ -133,6 +135,7 @@ export let ghost = defaultSettings["ghost"]
 export let lockdownSystem = defaultSettings["lockdownSystem"]
 export let scoreDetails = defaultSettings["scoreDetails"]
 export let scoreDisplay = defaultSettings["scoreDisplay"]
+export let slowLevelUp = defaultSettings["slowLevelUp"]
 
 export function getSettingObj(storageName?: string): TetrisSettings{
     localStorageSettings = null
@@ -149,6 +152,7 @@ export function getSettingObj(storageName?: string): TetrisSettings{
     ghost = Boolean(getSetting("ghost", storageName))
     scoreDetails = Boolean(getSetting("scoreDetails", storageName))
     scoreDisplay = Boolean(getSetting("scoreDisplay", storageName))
+    slowLevelUp = Boolean(getSetting("slowLevelUp", storageName))
 
     fieldWidth = blockNumWidth * blockSize; // フィールド幅
     fieldHeight = blockNumHeight * blockSize; // フィールド高さ
@@ -168,7 +172,8 @@ export function getSettingObj(storageName?: string): TetrisSettings{
         ghost,
         lockdownSystem,
         scoreDetails,
-        scoreDisplay
+        scoreDisplay,
+        slowLevelUp,
     }
 }
 
