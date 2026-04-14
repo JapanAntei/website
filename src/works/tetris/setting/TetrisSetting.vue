@@ -38,7 +38,7 @@ const setShapeFieldRef = (el: any) => {
 
 
 const saveSettings = () => {
-    localStorage.setItem(( props.setttingId + "Settings" ) ?? "GoMeTetrisSettings", JSON.stringify({
+    localStorage.setItem(( props.setttingId ?? "GoMeTetris" ) + "Settings" , JSON.stringify({
         blockSize: Number(blockSize.value?.value),
         blockNumHeight: Number(blockNumHeight.value?.value),
         blockNumWidth: Number(blockNumWidth.value?.value),
@@ -59,7 +59,7 @@ const saveSettings = () => {
 }
 
 const resetSettings = () => {
-    localStorage.setItem(( props.setttingId + "Settings" ) ?? "GoMeTetrisSettings", `{}`)
+    localStorage.setItem(( props.setttingId ?? "GoMeTetris" ) + "Settings" , `{}`)
     if(blockSize.value) blockSize.value.value = defaultSettings.blockSize.toString()
     if(blockNumHeight.value) blockNumHeight.value.value = defaultSettings.blockNumHeight.toString()
     if(blockNumWidth.value) blockNumWidth.value.value = defaultSettings.blockNumWidth.toString()
@@ -86,7 +86,7 @@ const moreGoMeTetrisSettings = () => {
     modifiedSettings.randomType = true;
     modifiedSettings.startingShapes = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
     modifiedSettings.dropShapes = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
-    localStorage.setItem(( props.setttingId + "Settings" ) ?? "GoMeTetrisSettings", JSON.stringify(modifiedSettings))
+    localStorage.setItem(( props.setttingId ?? "GoMeTetris" ) + "Settings" , JSON.stringify(modifiedSettings))
     if(randomType.value) randomType.value.checked = modifiedSettings.randomType;
     for(const elem of document.querySelectorAll<HTMLInputElement>(".startingShape")){
         elem.checked = modifiedSettings.startingShapes.includes(Number(elem.dataset.shapeNumber))
@@ -106,7 +106,7 @@ const normalGoMeTetrisSettings = () => {
     modifiedSettings.lockdownSystem = true;
     modifiedSettings.startingShapes = [2,3,5,6]
     modifiedSettings.dropShapes = [0,1,2,3,4,5,6]
-    localStorage.setItem(( props.setttingId + "Settings" ) ?? "GoMeTetrisSettings", JSON.stringify(modifiedSettings))
+    localStorage.setItem(( props.setttingId ?? "GoMeTetris" ) + "Settings" , JSON.stringify(modifiedSettings))
     if(nextNum.value) nextNum.value.value = modifiedSettings.nextNum.toString()
     if(holdNum.value) holdNum.value.value = modifiedSettings.holdNum.toString()
     if(randomType.value) randomType.value.checked = modifiedSettings.randomType;
